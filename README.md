@@ -1,2 +1,2 @@
 # DinogTheHexapod
-Arduino 18DOF custom hexapod
+Arduino 18DOF custom hexapod. Just for fun and nothing else...
