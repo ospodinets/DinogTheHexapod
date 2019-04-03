@@ -65,7 +65,7 @@
 */
 
 #include <avr/interrupt.h>
-#include <WProgram.h> 
+#include <Arduino.h> 
 
 #include "ServoEx.h"
 
