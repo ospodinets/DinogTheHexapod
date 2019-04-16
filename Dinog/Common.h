@@ -11,4 +11,5 @@ struct ControlPose
 };
 
 #define F_TOLERANCE 1e-03
+#define NUM_LEGS 6
 
