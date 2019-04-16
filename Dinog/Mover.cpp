@@ -1,11 +1,11 @@
 #include "Mover.h"
 #include "Common.h"
 #include "Leg.h"
+#include "Gait.h"
 #include "Arduino.h"
 
 namespace
-{
-    static const int NUM_LEGS = 6;
+{    
     struct LegState
     {
         Leg* leg;
@@ -16,7 +16,8 @@ namespace
 struct Mover::Impl
 {
     LegState legs[NUM_LEGS];
-    ControlPose controlPose;    
+    ControlPose controlPose;
+    float time {0};
 };
 
 Mover::Mover()
@@ -47,6 +48,7 @@ void Mover::setControlPose( const ControlPose & state )
 void Mover::update( float dt )
 {
     // tests
+#if 0
     static float delay = 0.0f;        
 
     delay += dt;
@@ -85,14 +87,19 @@ void Mover::update( float dt )
 
         Leg::commitTransaction( 1000 );
     }
+#endif
 
+
+
+    auto velocity = m_impl->controlPose.direction.length();
+
+    // add multiplier to control gait speed
+    m_impl->time += dt;
+
+    auto gait = Gait::query( velocity, m_impl->time );
 
     // for each leg in the array
     //  gait->evaluate
     //  update leg
-
-    // check if the gait finished , set next gait
-    // transitional gaits returns new gate which it leads to
-    // for usual gait - it return itself
 }
 
