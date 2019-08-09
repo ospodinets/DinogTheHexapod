@@ -1,5 +1,6 @@
 #include "Gait.h"
 #include "Common.h"
+#include "Arduino.h"
 #include <math.h>
 
 namespace
@@ -13,12 +14,15 @@ namespace
     public:
         SwitchingGait()
         {
+            
         }
 
         SwitchingGait* input( float velocity, float t )
         {
             return onInput( velocity, t );
         }
+
+        virtual const char* name() = 0;
 
     private:
         virtual SwitchingGait* onInput( float velocity, float t ) = 0;
@@ -29,6 +33,7 @@ namespace
     public:
         IdleGait();
         ~IdleGait();
+        const char* name() override { return "Idle"; };
 
     private:
         float onEval( int legIndex, float t ) override;
@@ -40,6 +45,22 @@ namespace
     public:
         WaveGait();
         ~WaveGait();
+        const char* name() override { return "Wave"; };
+
+    private:
+        float onEval( int legIndex, float t ) override;
+        SwitchingGait* onInput( float velocity, float t ) override;
+    };
+
+    class TripodGait : public SwitchingGait
+    {
+    public:
+        TripodGait();
+        ~TripodGait();
+        const char* name() override
+        {
+            return "Tripod";
+        };
 
     private:
         float onEval( int legIndex, float t ) override;
@@ -51,6 +72,7 @@ namespace
     public:
         TransitionGait( SwitchingGait * currentGait, SwitchingGait * targetGait, float t );
         ~TransitionGait();
+        const char* name() override { return "Transition"; };
 
     private:
         float onEval( int legIndex, float t );
@@ -99,7 +121,7 @@ SwitchingGait* IdleGait::onInput( float velocity, float t )
     if( fabs( velocity ) < F_TOLERANCE )
         return this;
 
-    return new TransitionGait( this, new WaveGait, t );
+    return new TransitionGait( this, new TripodGait, t );
 }
 
 
@@ -126,6 +148,36 @@ float WaveGait::onEval( int legIndex, float t )
 }
 
 SwitchingGait* WaveGait::onInput( float velocity, float t ) 
+{
+    if( fabs( velocity ) > F_TOLERANCE )
+        return this;
+
+    return new TransitionGait( this, new IdleGait, t );
+}
+
+TripodGait::TripodGait()
+    : SwitchingGait()
+{
+    m_impl->period = 2.0;
+    m_impl->legPhazeShifts[0] = 0.0f;
+    m_impl->legPhazeShifts[1] = 1.0f;
+    m_impl->legPhazeShifts[2] = 0.0f;
+    m_impl->legPhazeShifts[3] = 1.0f;
+    m_impl->legPhazeShifts[4] = 0.0f;
+    m_impl->legPhazeShifts[5] = 1.0f;
+}
+
+TripodGait::~TripodGait()
+{
+}
+
+
+float TripodGait::onEval( int legIndex, float t )
+{
+    return t < 1.0 ? -t : t - 1;
+}
+
+SwitchingGait* TripodGait::onInput( float velocity, float t )
 {
     if( fabs( velocity ) > F_TOLERANCE )
         return this;
@@ -217,14 +269,21 @@ float Gait::evaluate( int legIndex, float t )
 Gait* Gait::query( float velocity, float t )
 {    
     if( !Impl::s_currentGait )
+    {
         Impl::s_currentGait = new IdleGait();
+        Serial.println( "Idle gait started" );
+    }        
 
     auto next = Impl::s_currentGait->input( velocity, t );
 
     if( next != Impl::s_currentGait )
     {
+        Serial.print( Impl::s_currentGait->name() );
+        Serial.println( " gait finished" );
         delete Impl::s_currentGait;
         Impl::s_currentGait = next;
+        Serial.print( Impl::s_currentGait->name() );
+        Serial.println( " gait started" );
     }
 
     return Impl::s_currentGait;

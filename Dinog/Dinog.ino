@@ -6,6 +6,8 @@ Mover* mover = nullptr;
 // The setup() function runs once each time the micro-controller starts
 void setup()
 {
+    Serial.begin( 9600 );
+    Serial.println( "Dinog, The Hexapod Setup" );
     lastFrame = millis();
     mover = new Mover();
 }
