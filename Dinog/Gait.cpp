@@ -122,7 +122,6 @@ WaveGait::~WaveGait()
 
 float WaveGait::onEval( int legIndex, float t ) 
 {
-    auto ts = m_impl->legPhazeShifts[legIndex] + t;
     return t < 1.0 ? -t : ( ( t - 1 ) / 5 );
 }
 
@@ -209,7 +208,8 @@ bool Gait::isPeriodic() const
 float Gait::evaluate( int legIndex, float t )
 {
     double intP;
-    auto fractT = modf( t / m_impl->period, &intP );
+    auto ts = m_impl->legPhazeShifts[legIndex] + t;
+    auto fractT = modf( ts / m_impl->period, &intP );
 
     return onEval( legIndex, fractT * m_impl->period );
 }
@@ -228,4 +228,14 @@ Gait* Gait::query( float velocity, float t )
     }
 
     return Impl::s_currentGait;
+}
+
+void Gait::release()
+{
+    if( Impl::s_currentGait )
+    {
+        delete Impl::s_currentGait;
+        Impl::s_currentGait = nullptr;
+    }
+        
 }

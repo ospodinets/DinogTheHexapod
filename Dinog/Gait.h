@@ -18,6 +18,7 @@ public:
 
     // Gait state machine
     static Gait* query( float velocity, float t );
+    static void release();
 
 protected:
     Gait();
