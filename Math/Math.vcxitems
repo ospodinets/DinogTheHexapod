@@ -18,6 +18,9 @@
     <Text Include="$(MSBuildThisFileDirectory)library.properties" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Mat3x3.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Mat4x4.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Quat.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Vec3f.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Vec4f.h" />
   </ItemGroup>
