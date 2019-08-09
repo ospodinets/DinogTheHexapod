@@ -18,6 +18,10 @@
     <Text Include="$(MSBuildThisFileDirectory)library.properties" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Vec3.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Vec3f.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Vec4f.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Vec4f.cpp" />
   </ItemGroup>
 </Project>

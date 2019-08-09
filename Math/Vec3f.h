@@ -7,7 +7,7 @@ class Vec3f
 public:
     Vec3f()
     {
-        v[0] = v[1] = v[2] = 0;
+        set( 0, 0, 0 );
     }
 
     Vec3f( const Vec3f& other )
@@ -17,31 +17,32 @@ public:
 
     Vec3f( float v[3] )
     {
-        this->v[0] = v[0];
-        this->v[1] = v[1];
-        this->v[2] = v[2];
+        this->set( v[0], v[1], v[2] );
     }
 
     Vec3f( float v0, float v1, float v2 )
+    {
+        this->set( v0, v1, v2 );
+    }
+
+    Vec3f& operator=( const Vec3f& other )
+    {
+        this->set( other.v[0], other.v[1], other.v[2] );
+        return *this;
+    }
+
+    void set( float v0, float v1, float v2 )
     {
         this->v[0] = v0;
         this->v[1] = v1;
         this->v[2] = v2;
     }
 
-    Vec3f& operator=( const Vec3f& other )
-    {
-        this->v[0] = other.v[0];
-        this->v[1] = other.v[1];
-        this->v[2] = other.v[2];
-        return *this;
-    }
-
     bool equal( const Vec3f& other, float tol ) const
     {
         return fabs( v[0] - other.v[0] ) < tol &&
             fabs( v[1] - other.v[1] ) < tol &&
-            fabs( v[1] - other.v[1] ) < tol;
+            fabs( v[2] - other.v[2] ) < tol;
     }
 
     float& operator[]( int i )
@@ -138,7 +139,7 @@ public:
 
     float length() const
     {
-        return sqrtf( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] );
+        return sqrtf( length2() );
     }
 
     float length2() const
@@ -164,6 +165,11 @@ public:
     float angle( const Vec3f& other ) const
     {
         return acosf( dot( other ) / this->length() * other.length() );
+    }
+
+    static Vec3f Z()
+    {
+        return Vec3f { 0, 0, 1 };
     }
 
 private:
