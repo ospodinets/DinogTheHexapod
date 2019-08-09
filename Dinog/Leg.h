@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Vec3.h>
+#include <Vec3f.h>
 
 class Leg
 {
@@ -10,6 +10,8 @@ public:
 
     void setPos( const Vec3f& value );
     const Vec3f& getPos() const;
+
+    void center();
 
     // all setPos calls will be applied once commitTransaction is called
     static void startTransaction();

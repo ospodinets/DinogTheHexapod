@@ -1,21 +1,12 @@
 #include "Mover.h"
 #include "Common.h"
-#include "Leg.h"
+#include "LegController.h"
 #include "Gait.h"
 #include "Arduino.h"
 
-namespace
-{    
-    struct LegState
-    {
-        Leg* leg;
-    };
-
-}
-
 struct Mover::Impl
 {
-    LegState legs[NUM_LEGS];
+    LegController* legs[NUM_LEGS];
     ControlPose controlPose;
     float time {0};
 };
@@ -23,74 +14,48 @@ struct Mover::Impl
 Mover::Mover()
     : m_impl( new Impl )
 {
-    m_impl->legs[0].leg = new Leg( 4, 3, 2, false );
-    m_impl->legs[1].leg = new Leg( 50, 51, 52, true );
-    m_impl->legs[2].leg = new Leg( 46, 47, 48, false );
-    m_impl->legs[3].leg = new Leg( 13, 12, 11, true );
-    m_impl->legs[4].leg = new Leg( 10, 9, 8, false );
-    m_impl->legs[5].leg = new Leg( 7, 6, 5, true );  
+    // initial setup
+    Serial.println( "Initialize Mover" );
+    startLegTransaction();
+    for( int i = 0; i < NUM_LEGS; ++i )
+    {
+        m_impl->legs[i] = new LegController( getLegConfig( i ) );
+    }
+    commitLegTransaction( 1000 );
+
+    //test
+    ControlPose state;
+    state.direction.set( 1, 0, 0 );
+
+    setControlPose( state );
 }
 
 Mover::~Mover()
 {
+    Gait::release();
+    for( int i = 0; i < NUM_LEGS; ++i )
+    {
+        delete m_impl->legs[i];
+    }
     delete m_impl;
 }
 
 void Mover::setControlPose( const ControlPose & state )
 {
-    // Solver: process input
+    // For each leg:
+    for( int i = 0; i < NUM_LEGS; ++i )
+    {
+        auto config = getLegConfig( i );
+        // Solver: process input and evaluate Locomotion Vector
+        // Set Locomotion Vector
+        m_impl->legs[i]->setLocomotionVector( Vec3f { 0, 20, 0 } );
+    }
 
-    // Gait factory find gait
-    // if new gait not equal to the current one
-    // switch gait 
+    m_impl->controlPose = state;
 }
 
 void Mover::update( float dt )
 {
-    // tests
-#if 0
-    static float delay = 0.0f;        
-
-    delay += dt;
-
-    if( delay > 2 )
-    {
-        delay = 0;
-
-        static int state = 0;
-
-        Leg::startTransaction();
-
-        switch( state )
-        {
-            case 0:
-                for( int i = 0; i < NUM_LEGS; ++i )
-                    m_impl->legs[i].leg->setPos( Vec3f( 74, 0, -55 ) );
-                state = 1;
-                break;
-            
-            case 1:
-                for( int i = 0; i < NUM_LEGS; ++i )
-                    m_impl->legs[i].leg->setPos( Vec3f( 62, 0, -120 ) );
-                state = 2;
-                break;    
-
-            case 2:
-                state = 0;
-                for( int i = 0; i < NUM_LEGS; ++i )
-                    m_impl->legs[i].leg->setPos( Vec3f( 83, 0, -80 ) );
-                break;
-
-            default:
-                break;
-        }
-
-        Leg::commitTransaction( 1000 );
-    }
-#endif
-
-
-
     auto velocity = m_impl->controlPose.direction.length();
 
     // add multiplier to control gait speed
@@ -99,7 +64,10 @@ void Mover::update( float dt )
     auto gait = Gait::query( velocity, m_impl->time );
 
     // for each leg in the array
-    //  gait->evaluate
-    //  update leg
+    for( int i = 0; i < NUM_LEGS; ++i )
+    {
+        auto ph = gait->evaluate( i, m_impl->time );
+        m_impl->legs[i]->setPhaze( ph );
+    }
 }
 

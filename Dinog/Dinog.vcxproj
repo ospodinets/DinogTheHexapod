@@ -121,13 +121,16 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="Gait.h" />
     <ClInclude Include="Leg.h" />
+    <ClInclude Include="LegController.h" />
     <ClInclude Include="Mover.h" />
     <ClInclude Include="__vm\.Dinog.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Gait.cpp" />
     <ClCompile Include="Leg.cpp" />
+    <ClCompile Include="LegController.cpp" />
     <ClCompile Include="Mover.cpp" />
+    <ClCompile Include="Common.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

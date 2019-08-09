@@ -5,11 +5,12 @@
 
 namespace
 {
-    static const int L1 = 28;
-    static const int L2 = 55;
-    static const int L3 = 80;
-    static const int L2_2 = L2 * L2;
-    static const int L3_2 = L3 * L3;
+    static const int L2_2 = LegConfig::L2 * LegConfig::L2;
+    static const int L3_2 = LegConfig::L3 * LegConfig::L3;
+
+    Vec3f CENTER { LegConfig::L1 + LegConfig::L2,
+                   0,
+                   - LegConfig::L3 };
 
     static const int coxaTrim = 93;
     static const int femurTrim = 100;
@@ -24,16 +25,16 @@ namespace
         auto Pz_2 = pos[2] * pos[2];
 
         auto P0 = sqrt( Px_2 + Py_2 );
-        auto L4_2 = ( P0 - L1 ) * ( P0 - L1 ) + Pz_2;
+        auto L4_2 = ( P0 - LegConfig::L1 ) * ( P0 - LegConfig::L1 ) + Pz_2;
         auto L4 = sqrt( L4_2 );
 
         coxaValue = degrees( atan( pos[1] / pos[0] ) ) + coxaTrim;
-        float fFemurValue = acos( ( L2_2 + L4_2 - L3_2 ) / ( 2 * L2 * L4 ) ) + atan( pos[2] / ( P0 - L1 ) );
+        float fFemurValue = acos( ( L2_2 + L4_2 - L3_2 ) / ( 2 * LegConfig::L2 * L4 ) ) + atan( pos[2] / ( P0 - LegConfig::L1 ) );
         if( inverted )
             fFemurValue = -fFemurValue;
         femurValue = degrees( fFemurValue ) + femurTrim;
 
-        float fTibiaValue = acos( ( L4_2 - L2_2 - L3_2 ) / ( 2 * L2 * L3 ) );
+        float fTibiaValue = acos( ( L4_2 - L2_2 - L3_2 ) / ( 2 * LegConfig::L2 * LegConfig::L3 ) );
         if( inverted )
             fTibiaValue = M_PI - fTibiaValue;
 
@@ -100,6 +101,11 @@ void Leg::setPos( const Vec3f & value )
 const Vec3f & Leg::getPos() const
 {
     return m_impl->position;
+}
+
+void Leg::center()
+{
+    setPos( CENTER );
 }
 
 void Leg::startTransaction()
