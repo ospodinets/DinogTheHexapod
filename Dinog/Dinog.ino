@@ -1,7 +1,9 @@
 #include "Mover.h"
+#include "Controller.h"
 
 unsigned long lastFrame = 0;
 Mover* mover = nullptr;
+Controller* controller = nullptr;
 
 // The setup() function runs once each time the micro-controller starts
 void setup()
@@ -9,6 +11,7 @@ void setup()
     Serial.begin( 9600 );
     Serial.println( "Dinog, The Hexapod Setup" );
     lastFrame = millis();
+    controller = new Controller();
     mover = new Mover();
 }
 
@@ -20,6 +23,9 @@ void loop()
     {
         lastFrame = currFrame;
         float dt = delta / 1000.0;
+
+        controller->update( dt );
+        mover->setControlState( controller->getState() );
 
         mover->update( dt );
     }

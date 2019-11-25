@@ -119,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
+    <ClInclude Include="Controller.h" />
     <ClInclude Include="Gait.h" />
     <ClInclude Include="Leg.h" />
     <ClInclude Include="LegController.h" />
@@ -126,6 +127,7 @@
     <ClInclude Include="__vm\.Dinog.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Gait.cpp" />
     <ClCompile Include="Leg.cpp" />
     <ClCompile Include="LegController.cpp" />

@@ -22,12 +22,6 @@ Mover::Mover()
         m_impl->legs[i] = new LegController( getLegConfig( i ) );
     }
     commitLegTransaction( 1000 );
-
-    //test
-    ControlPose state;
-    state.direction.set( 1, 0, 0 );
-
-    setControlPose( state );
 }
 
 Mover::~Mover()

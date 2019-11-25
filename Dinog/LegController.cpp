@@ -68,27 +68,32 @@ void LegController::setLocomotionVector( const Vec3f & val )
     // calculate p0, p1
 
     // TEMP
-    m_impl->p0.set( LegConfig::L1 + LegConfig::L2 - val[0], -val[1], -LegConfig::L3 );
-    m_impl->p1.set( LegConfig::L1 + LegConfig::L2 - val[0], val[1], -LegConfig::L3 );
+    //m_impl->p0.set( LegConfig::L1 + LegConfig::L2 - 10, -val[1], -LegConfig::L3 );
+    //m_impl->p1.set( LegConfig::L1 + LegConfig::L2 - 10, val[1], -LegConfig::L3 );
+    //m_impl->p1 = m_impl->p0 = m_impl->leg->getCenter();
 }
 
 void LegController::setPhaze( float phaze )
 {
-    auto currentPos = m_impl->leg->getPos();
-    bool stance = false;
-    if( fabs( phaze ) < F_TOLERANCE )
+    /*
+    if( fabs( phaze - m_impl->lastPhaze ) > F_TOLERANCE )
     {
-        stance = m_impl->lastPhaze < 0;
-    }
-    else
-    {
-        stance = phaze > 0;
-    }
+        bool stance = false;
+        if( fabs( phaze ) < F_TOLERANCE )
+        {
+            stance = m_impl->lastPhaze < 0;
+        }
+        else
+        {
+            stance = phaze > 0;
+        }
 
-    auto pos = stance ? evaluateStance( phaze, m_impl->p0, m_impl->p1 ) :
-        evaluateSwing( phaze, m_impl->p0, m_impl->p1 );
+        auto pos = stance ? evaluateStance( phaze, m_impl->p0, m_impl->p1 ) :
+            evaluateSwing( phaze, m_impl->p0, m_impl->p1 );
 
-    m_impl->leg->setPos( pos );
+        m_impl->leg->setPos( pos );
 
-    m_impl->lastPhaze = phaze;
+        m_impl->lastPhaze = phaze;
+    }    
+    */
 }
