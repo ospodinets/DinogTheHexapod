@@ -7,7 +7,7 @@
 struct Mover::Impl
 {
     LegController* legs[NUM_LEGS];
-    ControlPose controlPose;
+    ControlState controlState;
     float time {0};
 };
 
@@ -40,26 +40,26 @@ Mover::~Mover()
     delete m_impl;
 }
 
-void Mover::setControlPose( const ControlPose & state )
+void Mover::setControlState( const ControlState& state )
 {
     // For each leg:
     for( int i = 0; i < NUM_LEGS; ++i )
     {
-        auto config = getLegConfig( i );
-        // Solver: process input and evaluate Locomotion Vector
-        // Set Locomotion Vector
-        m_impl->legs[i]->setLocomotionVector( Vec3f { 0, 20, 0 } );
+        // auto config = getLegConfig( i );
+        // Solver: process input and evaluate Locomotion Vectors for each leg
+        // Set Locomotion Vectors to leg controllers
+        //m_impl->legs[i]->setLocomotionVector( Vec3f { 0, i < 3 ? 20 : -20, 0 } );
     }
 
-    m_impl->controlPose = state;
+    m_impl->controlState = state;
 }
 
 void Mover::update( float dt )
 {
-    auto velocity = m_impl->controlPose.direction.length();
+    auto velocity = m_impl->controlState.direction.length();
 
     // add multiplier to control gait speed
-    m_impl->time += dt;
+    m_impl->time += dt / 2;
 
     auto gait = Gait::query( velocity, m_impl->time );
 

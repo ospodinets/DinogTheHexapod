@@ -1,6 +1,6 @@
 #pragma once
 
-struct ControlPose;
+struct ControlState;
 
 class Mover
 {
@@ -8,7 +8,7 @@ public:
     Mover();
     ~Mover();
 
-    void setControlPose( const ControlPose& state );
+    void setControlState( const ControlState& state );
     void update( float dt );
 
 private:

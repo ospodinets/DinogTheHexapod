@@ -4,11 +4,11 @@
 #include "Vec3f.h"
 #include "Quat.h"
 
-struct ControlPose
+struct ControlState
 {
     Vec3f direction { 0.0f, 0.0f, 0.0f };
     float torque { 0.0f };
-    Vec3f normal { 0.0f, 0.0f, 1.0f };    
+    Vec3f normal { 0.0f, 0.0f, 1.0f };
 };
 
 struct LegConfig
@@ -34,6 +34,8 @@ void startLegTransaction();
 void commitLegTransaction( int milliseconds );
 
 float lerp( float v0, float v1, float t );
+
+
 
 
 #define F_TOLERANCE 1e-03
