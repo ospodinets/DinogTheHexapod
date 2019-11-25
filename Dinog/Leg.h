@@ -2,14 +2,17 @@
 
 #include <Vec3f.h>
 
+struct LegConfig;
+
 class Leg
 {
 public:
-    Leg( int coxaPin, int femurPin, int tibiaPin, bool inverted );
+    Leg( const LegConfig& config );
     ~Leg();
 
     void setPos( const Vec3f& value );
     const Vec3f& getPos() const;
+    static Vec3f& getCenter();
 
     void center();
 

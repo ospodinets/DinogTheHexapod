@@ -12,13 +12,9 @@ namespace
                    0,
                    - LegConfig::L3 };
 
-    static const int coxaTrim = 93;
-    static const int femurTrim = 100;
-    static const int tibiaTrim = 3;
-
     static bool transaction = false;
 
-    void evaluate( const Vec3f& pos, bool inverted, int& coxaValue, int& femurValue, int& tibiaValue )
+    void evaluate( const Vec3f& pos, const LegConfig& legConfig, int& coxaValue, int& femurValue, int& tibiaValue )
     {
         auto Px_2 = pos[0] * pos[0];
         auto Py_2 = pos[1] * pos[1];
@@ -28,24 +24,22 @@ namespace
         auto L4_2 = ( P0 - LegConfig::L1 ) * ( P0 - LegConfig::L1 ) + Pz_2;
         auto L4 = sqrt( L4_2 );
 
-        coxaValue = degrees( atan( pos[1] / pos[0] ) ) + coxaTrim;
+        coxaValue = degrees( atan( pos[1] / pos[0] ) ) + legConfig.coxaTrim;
         float fFemurValue = acos( ( L2_2 + L4_2 - L3_2 ) / ( 2 * LegConfig::L2 * L4 ) ) + atan( pos[2] / ( P0 - LegConfig::L1 ) );
-        if( inverted )
+        if( legConfig.inverted )
             fFemurValue = -fFemurValue;
-        femurValue = degrees( fFemurValue ) + femurTrim;
+        femurValue = degrees( fFemurValue ) + legConfig.femurTrim;
 
         float fTibiaValue = acos( ( L4_2 - L2_2 - L3_2 ) / ( 2 * LegConfig::L2 * LegConfig::L3 ) );
-        if( inverted )
+        if( legConfig.inverted )
             fTibiaValue = M_PI - fTibiaValue;
 
-        tibiaValue = degrees( fTibiaValue ) + tibiaTrim;
+        tibiaValue = degrees( fTibiaValue ) + legConfig.tibiaTrim;
     }
 }
 
 struct Leg::Impl
 {
-    bool inverted;
-
     ServoEx coxa;
     ServoEx femur;
     ServoEx tibia;
@@ -57,11 +51,14 @@ struct Leg::Impl
     // in Leg's coordinates
     Vec3f position;
 
-    Impl( int coxaPin, int femurPin, int tibiaPin )
+    const LegConfig& legConfig;
+
+    Impl( const LegConfig& legConfig_ )
+        : legConfig( legConfig_ )
     {
-        coxa.attach( coxaPin );
-        femur.attach( femurPin );
-        tibia.attach( tibiaPin );
+        coxa.attach( legConfig.coxaPin );
+        femur.attach( legConfig.femurPin );
+        tibia.attach( legConfig.tibiaPin );
     }
 
     ~Impl()
@@ -72,10 +69,9 @@ struct Leg::Impl
     }    
 };
 
-Leg::Leg( int coxaPin, int femurPin, int tibiaPin, bool inverted )
-    : m_impl( new Impl( coxaPin, femurPin, tibiaPin ) )
-{
-    m_impl->inverted = inverted;
+Leg::Leg( const LegConfig& config )
+    : m_impl( new Impl( config ) )
+{   
 }
 
 Leg::~Leg()
@@ -89,7 +85,7 @@ void Leg::setPos( const Vec3f & value )
     if( !m_impl->position.equal( value, F_TOLERANCE ) )
     {
         m_impl->position = value;
-        evaluate( m_impl->position, m_impl->inverted, 
+        evaluate( m_impl->position, m_impl->legConfig, 
             m_impl->coxaValue, m_impl->femurValue, m_impl->tibiaValue );
 
         m_impl->coxa.write( m_impl->coxaValue );
@@ -101,6 +97,11 @@ void Leg::setPos( const Vec3f & value )
 const Vec3f & Leg::getPos() const
 {
     return m_impl->position;
+}
+
+Vec3f & Leg::getCenter()
+{
+    return CENTER;
 }
 
 void Leg::center()

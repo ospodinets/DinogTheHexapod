@@ -54,7 +54,7 @@ LegController::LegController( const LegConfig & config )
     m_impl->transform.mult( Mat4x4::translationMatrix( config.offset ) );
     m_impl->transform.mult( config.rotation.toMatrix() );
 
-    m_impl->leg = new Leg( config.coxaPin, config.femurPin, config.tibiaPin, config.inverted );
+    m_impl->leg = new Leg( config );
     m_impl->leg->center();
 }
 

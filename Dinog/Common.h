@@ -23,6 +23,10 @@ struct LegConfig
     bool inverted;
     Vec3f offset;
     Quat rotation;
+
+    int coxaTrim;
+    int femurTrim;
+    int tibiaTrim;
 };
 
 LegConfig& getLegConfig( int index );
