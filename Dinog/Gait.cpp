@@ -89,6 +89,7 @@ namespace
         } m_legs[NUM_LEGS];
         float m_progress { 0.0f };
         SwitchingGait* m_target { nullptr };
+        float m_lastT {};
     };
 }
 
@@ -118,8 +119,11 @@ float IdleGait::onEval( int legIndex, float t )
 
 SwitchingGait* IdleGait::onInput( float velocity, float t )
 {
-    if( fabs( velocity ) < F_TOLERANCE )
+    if( velocity < F_TOLERANCE )
         return this;
+
+    if( velocity > 0 && velocity < 5 )
+        return new TransitionGait( this, new WaveGait, t );
 
     return new TransitionGait( this, new TripodGait, t );
 }
@@ -149,10 +153,10 @@ float WaveGait::onEval( int legIndex, float t )
 
 SwitchingGait* WaveGait::onInput( float velocity, float t ) 
 {
-    if( fabs( velocity ) > F_TOLERANCE )
-        return this;
+    if( fabs( velocity ) < F_TOLERANCE )
+        return new TransitionGait( this, new IdleGait, t );
 
-    return new TransitionGait( this, new IdleGait, t );
+    return this;
 }
 
 TripodGait::TripodGait()
@@ -179,15 +183,16 @@ float TripodGait::onEval( int legIndex, float t )
 
 SwitchingGait* TripodGait::onInput( float velocity, float t )
 {
-    if( fabs( velocity ) > F_TOLERANCE )
-        return this;
+    if( fabs( velocity ) > 7 )
+        return this;    
 
-    return new TransitionGait( this, new IdleGait, t );
+    return new TransitionGait( this, new WaveGait, t );
 }
 
 TransitionGait::TransitionGait( SwitchingGait * currentGait, SwitchingGait * targetGait, float t )
     : SwitchingGait()
     , m_target { targetGait }
+    , m_lastT { t }
 {
     for( int i = 0; i < NUM_LEGS; ++i )
     {
@@ -228,7 +233,9 @@ SwitchingGait* TransitionGait::onInput( float velocity, float t )
     if( fabs( m_progress - s_T ) < F_TOLERANCE )
         return m_target;
 
-    m_progress += t;
+    auto dt = t - m_lastT;
+
+    m_progress += dt;
     if( m_progress > s_T )
     {
         m_progress = s_T;
