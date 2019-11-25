@@ -1,0 +1,3 @@
+[submodule "SBUS"]
+	path = SBUS
+	url = https://github.com/bolderflight/SBUS
