@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Common.h"
+
 class Gait
 {
 public:        
@@ -14,19 +16,19 @@ public:
     // phase < 0 - swing 
     // phase > 0 - stance
 
-    float evaluate( int legIndex, float t );
+    float evaluate( int legIndex, float t ) const;
 
     // Gait state machine
-    static Gait* query( float velocity, float t );
+    static const Gait* const query( float velocity, float t );
     static void release();
 
 protected:
     Gait();
 
 private:   
-    virtual float onEval( int legIndex, float t ) = 0;    
+    virtual float onEval( int legIndex, float t ) const = 0;    
 
 protected:
-    struct Impl;
-    Impl* m_impl;
+    float m_period { 1.0f };
+    float m_offsets[NUM_LEGS] {};    
 };

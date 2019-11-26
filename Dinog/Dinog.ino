@@ -2,7 +2,7 @@
 #include "Controller.h"
 
 unsigned long lastFrame = 0;
-Mover* mover = nullptr;
+Mover mover;
 Controller controller;
 
 // The setup() function runs once each time the micro-controller starts
@@ -12,7 +12,7 @@ void setup()
     Serial.println( "Dinog, The Hexapod Setup" );
     lastFrame = millis();
     controller.init();
-    mover = new Mover();
+    mover.init();
 }
 
 // Add the main program code into the continuous loop() function
@@ -25,8 +25,7 @@ void loop()
         float dt = delta / 1000.0;
 
         controller.update( dt );
-        mover->setControlState( controller.getState() );
-
-        mover->update( dt );
+        mover.setControlState( controller.getState() );
+        mover.update( dt );
     }
 }

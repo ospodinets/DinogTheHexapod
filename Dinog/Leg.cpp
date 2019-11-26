@@ -1,7 +1,6 @@
 #include "Leg.h"
-#include "Common.h"
-#include "ServoEx.h"
-#include "Arduino.h"
+
+#include <Arduino.h>
 
 namespace
 {
@@ -12,7 +11,7 @@ namespace
                    0,
                    - LegConfig::L3 };
 
-    static bool transaction = false;
+    bool transaction = false;
 
     void evaluate( const Vec3f& pos, const LegConfig& legConfig, int& coxaValue, int& femurValue, int& tibiaValue )
     {
@@ -38,65 +37,52 @@ namespace
     }
 }
 
-struct Leg::Impl
-{
-    ServoEx coxa;
-    ServoEx femur;
-    ServoEx tibia;
-
-    int coxaValue = 90;
-    int femurValue = 90;
-    int tibiaValue = 90;
-
-    // in Leg's coordinates
-    Vec3f position;
-
-    const LegConfig& legConfig;
-
-    Impl( const LegConfig& legConfig_ )
-        : legConfig( legConfig_ )
-    {
-        coxa.attach( legConfig.coxaPin );
-        femur.attach( legConfig.femurPin );
-        tibia.attach( legConfig.tibiaPin );
-    }
-
-    ~Impl()
-    {
-        coxa.detach();
-        femur.detach();
-        tibia.detach();
-    }    
-};
-
-Leg::Leg( const LegConfig& config )
-    : m_impl( new Impl( config ) )
-{   
+Leg::Leg( )
+    : m_config( nullptr )
+{  
+    m_position = CENTER;
 }
 
 Leg::~Leg()
 {
-    delete m_impl;
 }
 
+void Leg::init( const LegConfig& config )
+{
+    m_config = &config;
+
+    Serial.print( "Init leg: " );
+
+    Serial.print( "Coxa: " );
+    Serial.print( m_config->coxaPin, DEC );
+    Serial.print( " Femur: " );
+    Serial.print( m_config->femurPin, DEC );
+    Serial.print( " Tibia: " );
+    Serial.print( m_config->tibiaPin, DEC );
+    Serial.print( "\n" );
+
+    m_coxa.attach( m_config->coxaPin );
+    m_femur.attach( m_config->femurPin );
+    m_tibia.attach( m_config->tibiaPin );
+}
 
 void Leg::setPos( const Vec3f & value )
 {
-    if( !m_impl->position.equal( value, F_TOLERANCE ) )
+    if( !m_position.equal( value, F_TOLERANCE ) )
     {
-        m_impl->position = value;
-        evaluate( m_impl->position, m_impl->legConfig, 
-            m_impl->coxaValue, m_impl->femurValue, m_impl->tibiaValue );
+        int coxa, femur, tibia;
+        m_position = value;
+        evaluate( m_position, *m_config, coxa, femur, tibia );
 
-        m_impl->coxa.write( m_impl->coxaValue );
-        m_impl->femur.write( m_impl->femurValue );
-        m_impl->tibia.write( m_impl->tibiaValue );
+        m_coxa.write( coxa );
+        m_femur.write( femur );
+        m_tibia.write( tibia );
     }
 }
 
 const Vec3f & Leg::getPos() const
 {
-    return m_impl->position;
+    return m_position;
 }
 
 Vec3f & Leg::getCenter()

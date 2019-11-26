@@ -13,8 +13,7 @@ namespace
     {
     public:
         SwitchingGait()
-        {
-            
+        {            
         }
 
         SwitchingGait* input( float velocity, float t )
@@ -36,7 +35,7 @@ namespace
         const char* name() override { return "Idle"; };
 
     private:
-        float onEval( int legIndex, float t ) override;
+        float onEval( int legIndex, float t ) const override;
         SwitchingGait* onInput( float velocity, float t ) override;
     };
 
@@ -48,7 +47,7 @@ namespace
         const char* name() override { return "Wave"; };
 
     private:
-        float onEval( int legIndex, float t ) override;
+        float onEval( int legIndex, float t ) const override;
         SwitchingGait* onInput( float velocity, float t ) override;
     };
 
@@ -63,7 +62,7 @@ namespace
         };
 
     private:
-        float onEval( int legIndex, float t ) override;
+        float onEval( int legIndex, float t ) const override;
         SwitchingGait* onInput( float velocity, float t ) override;
     };
 
@@ -75,7 +74,7 @@ namespace
         const char* name() override { return "Transition"; };
 
     private:
-        float onEval( int legIndex, float t );
+        float onEval( int legIndex, float t ) const override;
         SwitchingGait* onInput( float velocity, float t ) override;
 
     private:
@@ -91,17 +90,11 @@ namespace
         SwitchingGait* m_target { nullptr };
         float m_lastT {};
     };
+
+    SwitchingGait* s_currentGait { nullptr };
 }
 
-struct Gait::Impl
-{
-    float period { 1.0f };
-    float legPhazeShifts[NUM_LEGS] {};
 
-    static SwitchingGait* s_currentGait;
-};
-
-SwitchingGait* Gait::Impl::s_currentGait { nullptr };
 
 IdleGait::IdleGait()
     : SwitchingGait()
@@ -112,7 +105,7 @@ IdleGait::~IdleGait()
 {
 }
     
-float IdleGait::onEval( int legIndex, float t )
+float IdleGait::onEval( int legIndex, float t ) const
 {
     return 0.5f;
 }
@@ -132,13 +125,13 @@ SwitchingGait* IdleGait::onInput( float velocity, float t )
 WaveGait::WaveGait()
     : SwitchingGait()
 {
-    m_impl->period = 6.0;
-    m_impl->legPhazeShifts[0] = 0.0f;
-    m_impl->legPhazeShifts[1] = 1.0f;
-    m_impl->legPhazeShifts[2] = 2.0f;
-    m_impl->legPhazeShifts[3] = 3.0f;
-    m_impl->legPhazeShifts[4] = 4.0f;
-    m_impl->legPhazeShifts[5] = 5.0f;
+    m_period = 6.0;
+    m_offsets[0] = 0.0f;
+    m_offsets[1] = 1.0f;
+    m_offsets[2] = 2.0f;
+    m_offsets[3] = 3.0f;
+    m_offsets[4] = 4.0f;
+    m_offsets[5] = 5.0f;
 }
 
 WaveGait::~WaveGait()
@@ -146,7 +139,7 @@ WaveGait::~WaveGait()
 }
 
 
-float WaveGait::onEval( int legIndex, float t ) 
+float WaveGait::onEval( int legIndex, float t ) const
 {
     return t < 1.0 ? -t : ( ( t - 1 ) / 5 );
 }
@@ -162,13 +155,13 @@ SwitchingGait* WaveGait::onInput( float velocity, float t )
 TripodGait::TripodGait()
     : SwitchingGait()
 {
-    m_impl->period = 2.0;
-    m_impl->legPhazeShifts[0] = 0.0f;
-    m_impl->legPhazeShifts[1] = 1.0f;
-    m_impl->legPhazeShifts[2] = 0.0f;
-    m_impl->legPhazeShifts[3] = 1.0f;
-    m_impl->legPhazeShifts[4] = 0.0f;
-    m_impl->legPhazeShifts[5] = 1.0f;
+    m_period = 2.0;
+    m_offsets[0] = 0.0f;
+    m_offsets[1] = 1.0f;
+    m_offsets[2] = 0.0f;
+    m_offsets[3] = 1.0f;
+    m_offsets[4] = 0.0f;
+    m_offsets[5] = 1.0f;
 }
 
 TripodGait::~TripodGait()
@@ -176,7 +169,7 @@ TripodGait::~TripodGait()
 }
 
 
-float TripodGait::onEval( int legIndex, float t )
+float TripodGait::onEval( int legIndex, float t ) const
 {
     return t < 1.0 ? -t : t - 1;
 }
@@ -206,7 +199,7 @@ TransitionGait::~TransitionGait()
 }
 
 
-float TransitionGait::onEval( int legIndex, float t )
+float TransitionGait::onEval( int legIndex, float t ) const
 {
     const auto& l = m_legs[legIndex];
 
@@ -245,63 +238,60 @@ SwitchingGait* TransitionGait::onInput( float velocity, float t )
 }
 
 Gait::Gait()
-    : m_impl( new Impl() )
 {
 }
 
 Gait::~Gait()
-{
-    delete m_impl;
+{    
 }
 
 float Gait::period() const
 {
-    return m_impl->period;
+    return m_period;
 }
 
 bool Gait::isPeriodic() const
 {
-    return fabs( m_impl->period ) > F_TOLERANCE;
+    return fabs( m_period ) > F_TOLERANCE;
 }
 
-float Gait::evaluate( int legIndex, float t )
+float Gait::evaluate( int legIndex, float t ) const
 {
     double intP;
-    auto ts = m_impl->legPhazeShifts[legIndex] + t;
-    auto fractT = modf( ts / m_impl->period, &intP );
+    auto ts = m_offsets[legIndex] + t;
+    auto fractT = modf( ts / m_period, &intP );
 
-    return onEval( legIndex, fractT * m_impl->period );
+    return onEval( legIndex, fractT * m_period );
 }
 
-Gait* Gait::query( float velocity, float t )
+const Gait* const Gait::query( float velocity, float t )
 {    
-    if( !Impl::s_currentGait )
+    if( !s_currentGait )
     {
-        Impl::s_currentGait = new IdleGait();
+        s_currentGait = new IdleGait();
         Serial.println( "Idle gait started" );
     }        
 
-    auto next = Impl::s_currentGait->input( velocity, t );
+    auto next = s_currentGait->input( velocity, t );
 
-    if( next != Impl::s_currentGait )
+    if( next != s_currentGait )
     {
-        Serial.print( Impl::s_currentGait->name() );
+        Serial.print( s_currentGait->name() );
         Serial.println( " gait finished" );
-        delete Impl::s_currentGait;
-        Impl::s_currentGait = next;
-        Serial.print( Impl::s_currentGait->name() );
+        delete s_currentGait;
+        s_currentGait = next;
+        Serial.print( s_currentGait->name() );
         Serial.println( " gait started" );
     }
 
-    return Impl::s_currentGait;
+    return s_currentGait;
 }
 
 void Gait::release()
 {
-    if( Impl::s_currentGait )
+    if( s_currentGait )
     {
-        delete Impl::s_currentGait;
-        Impl::s_currentGait = nullptr;
-    }
-        
+        delete s_currentGait;
+        s_currentGait = nullptr;
+    }        
 }

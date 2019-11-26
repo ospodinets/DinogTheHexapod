@@ -1,6 +1,7 @@
 #pragma once
 
-struct ControlState;
+#include "Common.h"
+#include "LegController.h"
 
 class Mover
 {
@@ -8,10 +9,13 @@ public:
     Mover();
     ~Mover();
 
+    void init();
+
     void setControlState( const ControlState& state );
     void update( float dt );
 
 private:
-    struct Impl;
-    Impl* m_impl;
+    LegController m_legs[NUM_LEGS];
+    ControlState m_controlState;
+    float m_time { 0 };
 };

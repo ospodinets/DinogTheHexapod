@@ -1,14 +1,17 @@
 #pragma once
 
-#include <Vec3f.h>
+#include "Common.h"
 
-struct LegConfig;
+#include <Vec3f.h>
+#include <ServoEx.h>
 
 class Leg
 {
 public:
-    Leg( const LegConfig& config );
+    Leg();
     ~Leg();
+
+    void init( const LegConfig& config );
 
     void setPos( const Vec3f& value );
     const Vec3f& getPos() const;
@@ -21,6 +24,9 @@ public:
     static void commitTransaction( int msTransactionTime );
 
 private:
-    struct Impl;
-    Impl* m_impl;
+    ServoEx m_coxa;
+    ServoEx m_femur;
+    ServoEx m_tibia;
+    Vec3f m_position;
+    const LegConfig* m_config;
 };
