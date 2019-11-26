@@ -1,36 +1,25 @@
 #include "Controller.h"
-#include "Common.h"
-#include "Arduino.h"
-
-namespace
-{
-}
-
-struct Controller::Impl
-{
-    ControlState state;    
-};
 
 Controller::Controller()
-    : m_impl( new Impl )
-{
-    
+    : m_receiver( Serial2 )
+{    
 }
 
 Controller::~Controller()
 {
-    delete m_impl;
+    
 }
 
-const ControlState& Controller::getState() const
+void Controller::init()
 {
-    return m_impl->state;
+    m_receiver.begin();
 }
 
 void Controller::update( float dt )
 {
     auto val = 0; 
-    m_impl->state.direction.set( 0, val, 0 );
+    m_state.direction.set( 0, val, 0 );
+
     
 }
 

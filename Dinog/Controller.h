@@ -1,18 +1,26 @@
 #pragma once
 
+#include "SBUS.h"
+
+#include "Common.h"
+
 struct ControlState;
 
 class Controller
 {
 public:
     Controller();
-    ~Controller();
+    ~Controller();    
 
-    const ControlState& getState() const;
+    const ControlState& getState() const
+    {
+        return m_state;
+    }
 
+    void init();
     void update( float dt );
 
 private:
-    struct Impl;
-    Impl* m_impl;
+    SBUS m_receiver;
+    ControlState m_state;
 };
