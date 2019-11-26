@@ -9,11 +9,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServoEx", "ServoEx\ServoEx.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math", "Math\Math.vcxitems", "{12B44763-F18A-4079-90D7-2D8172B2EBBC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SBUS", "SBUS\SBUS.vcxitems", "{02016073-F3ED-4578-8E50-A39168B8D71F}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		SBUS\SBUS.vcxitems*{02016073-f3ed-4578-8e50-a39168b8d71f}*SharedItemsImports = 9
 		Math\Math.vcxitems*{12b44763-f18a-4079-90d7-2d8172b2ebbc}*SharedItemsImports = 9
 		ServoEx\ServoEx.vcxitems*{4a61d62e-521c-4903-80ce-710a8026a4b8}*SharedItemsImports = 9
 		Math\Math.vcxitems*{c5f80730-f44f-4478-bdae-6634efc2ca88}*SharedItemsImports = 4
+		SBUS\SBUS.vcxitems*{c5f80730-f44f-4478-bdae-6634efc2ca88}*SharedItemsImports = 4
 		ServoEx\ServoEx.vcxitems*{c5f80730-f44f-4478-bdae-6634efc2ca88}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
