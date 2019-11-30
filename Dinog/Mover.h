@@ -11,11 +11,11 @@ public:
 
     void init();
 
-    void setControlState( const ControlState& state );
+    void setControl( const Control& control );
     void update( float dt );
 
 private:
     LegController m_legs[NUM_LEGS];
-    ControlState m_controlState;
+    Control m_control;
     float m_time { 0 };
 };

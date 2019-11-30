@@ -16,7 +16,7 @@ public:
     void init( const LegConfig& legConfig );
 
     void setLocomotionVector( const Vec3f& val );
-    void setPhaze( float phaze );
+    void evaluate( float phaze );
 
 private:
     Leg m_leg;

@@ -51,6 +51,8 @@ void Leg::init( const LegConfig& config )
 {
     m_config = &config;
 
+    setPos( getCenter() );
+
     Serial.print( "Init leg: " );
 
     Serial.print( "Coxa: " );
@@ -85,7 +87,7 @@ const Vec3f & Leg::getPos() const
     return m_position;
 }
 
-Vec3f & Leg::getCenter()
+const Vec3f & Leg::getCenter()
 {
     return CENTER;
 }

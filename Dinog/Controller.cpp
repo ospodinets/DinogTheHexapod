@@ -17,8 +17,6 @@ void Controller::init()
 
 void Controller::update( float dt )
 {
-    auto val = 0; 
-    m_state.direction.set( 0, val, 0 );
 
     
 }

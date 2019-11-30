@@ -24,7 +24,7 @@ void Mover::init()
     commitLegTransaction( 1000 );
 }
 
-void Mover::setControlState( const ControlState& state )
+void Mover::setControl( const Control& control )
 {
     // For each leg:
     for( int i = 0; i < NUM_LEGS; ++i )
@@ -35,12 +35,12 @@ void Mover::setControlState( const ControlState& state )
         //m_legs[i].setLocomotionVector( Vec3f { 0, i < 3 ? 20 : -20, 0 } );
     }
 
-    m_controlState = state;
+    m_control = control;
 }
 
 void Mover::update( float dt )
 {
-    auto velocity = m_controlState.direction.length();
+    auto velocity = m_control.direction.length();
 
     // add multiplier to control gait speed
     m_time += dt / 2;
@@ -51,7 +51,7 @@ void Mover::update( float dt )
     for( int i = 0; i < NUM_LEGS; ++i )
     {
         auto ph = gait->evaluate( i, m_time );
-        m_legs[i].setPhaze( ph );
+        m_legs[i].evaluate( ph );
     }
 }
 

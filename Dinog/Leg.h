@@ -15,7 +15,7 @@ public:
 
     void setPos( const Vec3f& value );
     const Vec3f& getPos() const;
-    static Vec3f& getCenter();
+    const Vec3f& getCenter();
 
     void center();
 

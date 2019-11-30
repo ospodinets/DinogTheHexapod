@@ -25,7 +25,7 @@ void loop()
         float dt = delta / 1000.0;
 
         controller.update( dt );
-        mover.setControlState( controller.getState() );
+        //mover.setControl(  );
         mover.update( dt );
     }
 }

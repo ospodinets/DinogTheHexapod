@@ -4,12 +4,14 @@
 #include "Vec3f.h"
 #include "Quat.h"
 
-struct ControlState
-{
+struct Control
+{    
     Vec3f direction { 0.0f, 0.0f, 0.0f };
     float torque { 0.0f };
     Vec3f normal { 0.0f, 0.0f, 1.0f };
+    float height { 0.0f };
 };
+
 
 struct LegConfig
 {

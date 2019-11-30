@@ -26,8 +26,8 @@ namespace
 
 
 LegController::LegController()
-    : m_p0 { Leg::getCenter() }
-    , m_p1 { Leg::getCenter() }
+    : m_p0 { }
+    , m_p1 { }
     , m_phaze { 0.5 }
     , m_lastPhaze { 0.5 }
     , m_transform { 1.0f }    
@@ -42,8 +42,8 @@ void LegController::init( const LegConfig& legConfig )
     m_transform.mult( Mat4x4::translationMatrix( legConfig.offset ) );
     m_transform.mult( legConfig.rotation.toMatrix() );
 
-    m_leg.init( legConfig );
-    m_leg.center();
+    m_p0 = m_p1 = m_leg.getCenter();
+    m_leg.init( legConfig );    
 }
 
 void LegController::setLocomotionVector( const Vec3f & val )
@@ -56,7 +56,7 @@ void LegController::setLocomotionVector( const Vec3f & val )
     //m_p1 = m_p0 = m_leg.getCenter();
 }
 
-void LegController::setPhaze( float phaze )
+void LegController::evaluate( float phaze )
 {
     /*
     if( fabs( phaze - m_lastPhaze ) > F_TOLERANCE )
