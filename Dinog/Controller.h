@@ -7,6 +7,22 @@ class Controller
 public:
     struct State
     {
+        enum class Event
+        {
+            Undefined,
+            Control,
+            Gait,            
+            Menu,
+
+            // These events are sent only in menu mode
+            Next,
+            Prev,
+            Set,
+            Exit,
+            Value,
+        } event { Event::Undefined };
+        
+        int args[16] {};
     };
 
     Controller();

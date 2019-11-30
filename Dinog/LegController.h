@@ -18,6 +18,9 @@ public:
     void setLocomotionVector( const Vec3f& val );
     void evaluate( float phaze );
 
+    // used only if locomotion is disabled
+    void moveToPos( const Vec3f& pos );
+
 private:
     Leg m_leg;
     Vec3f m_p0, m_p1;

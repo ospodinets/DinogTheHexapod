@@ -40,18 +40,34 @@ void Mover::setControl( const Control& control )
 
 void Mover::update( float dt )
 {
-    auto velocity = m_control.direction.length();
-
-    // add multiplier to control gait speed
-    m_time += dt / 2;
-
-    auto gait = Gait::query( velocity, m_time );
-
-    // for each leg in the array
-    for( int i = 0; i < NUM_LEGS; ++i )
+    if( m_locomotionEnabled )
     {
-        auto ph = gait->evaluate( i, m_time );
-        m_legs[i].evaluate( ph );
+        auto velocity = m_control.direction.length();
+
+        // add multiplier to control gait speed
+        m_time += dt / 2;
+
+        auto gait = Gait::query( velocity, m_time );
+
+        // for each leg in the array
+        for( int i = 0; i < NUM_LEGS; ++i )
+        {
+            auto ph = gait->evaluate( i, m_time );
+            m_legs[i].evaluate( ph );
+        }
+    }
+}
+
+void Mover::enableLocomotion( bool enable )
+{
+    m_locomotionEnabled = enable;
+}
+
+void Mover::evaluateLeg( int leg, const Vec3f& pos )
+{
+    if( !m_locomotionEnabled )
+    {
+        m_legs[leg].moveToPos( pos );
     }
 }
 

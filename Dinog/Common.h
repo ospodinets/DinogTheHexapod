@@ -32,6 +32,9 @@ struct LegConfig
 };
 
 LegConfig& getLegConfig( int index );
+void loadConfig();
+void saveConfig();
+
 void startLegTransaction();
 void commitLegTransaction( int milliseconds );
 

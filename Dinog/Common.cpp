@@ -16,6 +16,16 @@ LegConfig& getLegConfig( int index )
     return s_config[index];
 }
 
+void loadConfig()
+{
+
+}
+
+void saveConfig()
+{
+
+}
+
 void startLegTransaction()
 {
     Leg::startTransaction();

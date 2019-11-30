@@ -80,3 +80,15 @@ void LegController::evaluate( float phaze )
     }    
     */
 }
+
+void LegController::moveToPos( const Vec3f& pos )
+{
+    Vec3f target;
+
+    auto center = m_leg.getCenter();
+    target[0] = center[0] + pos[0];
+    target[1] = center[0] + pos[1];
+    target[2] = center[2];
+
+    m_leg.setPos( target );
+}
