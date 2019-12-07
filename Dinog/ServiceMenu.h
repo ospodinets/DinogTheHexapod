@@ -10,10 +10,10 @@ public:
     public:
         virtual void setLeg( int i ) = 0;
         virtual void setJoint( int i ) = 0;
-        virtual void setTrim( int val ) = 0;
-        virtual void save() = 0;
-        virtual void evaluate( int x, int y ) = 0;        
-        virtual void exit() = 0;
+        virtual void enterEvaluate() = 0;        
+        virtual void evaluate( float x, float y ) = 0;
+        virtual void exitEvaluate( bool save ) = 0;
+        virtual void exitMenu() = 0;
     };
 
     ServiceMenu( const Controller& controller, Observer* observer );
@@ -26,7 +26,6 @@ private:
     class State;
     class SetLegState;
     class SetJointState;
-    class SetTrimState;
     class EvaluateState;
 
     const Controller& m_controller;

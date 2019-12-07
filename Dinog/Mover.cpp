@@ -16,16 +16,17 @@ void Mover::init()
 {
     // initial setup
     Serial.println( "Initialize Mover" );
-    startLegTransaction();
     for( int i = 0; i < NUM_LEGS; ++i )
     {
         m_legs[i].init( getLegConfig( i ) );
     }
-    commitLegTransaction( 1000 );
 }
 
 void Mover::setControl( const Control& control )
 {
+    if( !m_locomotionEnabled )
+        return;
+
     // For each leg:
     for( int i = 0; i < NUM_LEGS; ++i )
     {
@@ -42,7 +43,7 @@ void Mover::update( float dt )
 {
     if( m_locomotionEnabled )
     {
-        auto velocity = m_control.direction.length();
+        auto velocity = m_control.direction.length2();
 
         // add multiplier to control gait speed
         m_time += dt / 2;
@@ -61,6 +62,10 @@ void Mover::update( float dt )
 void Mover::enableLocomotion( bool enable )
 {
     m_locomotionEnabled = enable;
+    for( int i = 0; i < NUM_LEGS; ++i )
+    {
+        centerLeg( i );
+    }
 }
 
 void Mover::evaluateLeg( int leg, const Vec3f& pos )
@@ -71,3 +76,7 @@ void Mover::evaluateLeg( int leg, const Vec3f& pos )
     }
 }
 
+void Mover::centerLeg( int leg )
+{
+    m_legs[leg].centerLeg();
+}

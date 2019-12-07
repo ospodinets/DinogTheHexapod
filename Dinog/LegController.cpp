@@ -53,12 +53,11 @@ void LegController::setLocomotionVector( const Vec3f & val )
     // TEMP
     //m_p0.set( LegConfig::L1 + LegConfig::L2 - 10, -val[1], -LegConfig::L3 );
     //m_p1.set( LegConfig::L1 + LegConfig::L2 - 10, val[1], -LegConfig::L3 );
-    //m_p1 = m_p0 = m_leg.getCenter();
+    m_p1 = m_p0 = m_leg.getCenter();
 }
 
 void LegController::evaluate( float phaze )
 {
-    /*
     if( fabs( phaze - m_lastPhaze ) > F_TOLERANCE )
     {
         bool stance = false;
@@ -77,8 +76,7 @@ void LegController::evaluate( float phaze )
         m_leg.setPos( pos );
 
         m_lastPhaze = phaze;
-    }    
-    */
+    }
 }
 
 void LegController::moveToPos( const Vec3f& pos )
@@ -87,8 +85,13 @@ void LegController::moveToPos( const Vec3f& pos )
 
     auto center = m_leg.getCenter();
     target[0] = center[0] + pos[0];
-    target[1] = center[0] + pos[1];
+    target[1] = center[1] + pos[1];
     target[2] = center[2];
 
     m_leg.setPos( target );
+}
+
+void LegController::centerLeg()
+{
+    m_leg.setPos( m_leg.getCenter(), true );
 }

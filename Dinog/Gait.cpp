@@ -112,10 +112,10 @@ float IdleGait::onEval( int legIndex, float t ) const
 
 SwitchingGait* IdleGait::onInput( float velocity, float t )
 {
-    if( velocity < F_TOLERANCE )
+    if( velocity <= F_TOLERANCE )
         return this;
 
-    if( velocity > 0 && velocity < 5 )
+    if( velocity > F_TOLERANCE && velocity < 0.5 )
         return new TransitionGait( this, new WaveGait, t );
 
     return new TransitionGait( this, new TripodGait, t );
@@ -146,7 +146,7 @@ float WaveGait::onEval( int legIndex, float t ) const
 
 SwitchingGait* WaveGait::onInput( float velocity, float t ) 
 {
-    if( fabs( velocity ) < F_TOLERANCE )
+    if( fabs( velocity ) <= F_TOLERANCE )
         return new TransitionGait( this, new IdleGait, t );
 
     return this;
@@ -176,7 +176,7 @@ float TripodGait::onEval( int legIndex, float t ) const
 
 SwitchingGait* TripodGait::onInput( float velocity, float t )
 {
-    if( fabs( velocity ) > 7 )
+    if( fabs( velocity ) > 0.7 )
         return this;    
 
     return new TransitionGait( this, new WaveGait, t );

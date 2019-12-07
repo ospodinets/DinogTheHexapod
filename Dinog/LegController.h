@@ -20,6 +20,7 @@ public:
 
     // used only if locomotion is disabled
     void moveToPos( const Vec3f& pos );
+    void centerLeg();
 
 private:
     Leg m_leg;

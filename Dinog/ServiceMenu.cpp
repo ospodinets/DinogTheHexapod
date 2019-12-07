@@ -9,7 +9,6 @@ public:
     {
         SetLeg,
         SetJoint,
-        SetTrim,
         Evaluate,
 
         Total
@@ -24,7 +23,7 @@ public:
     virtual void setup() = 0;
     virtual State* update( float dt ) = 0;
 
-protected:
+protected:    
     Type m_type;
     ServiceMenu* m_host;
 };
@@ -34,7 +33,8 @@ class ServiceMenu::SetLegState : public  State
 public:
     SetLegState( ServiceMenu* host );
 
-private:
+private: 
+    void report();
     void setup() override;
     State* update( float dt ) override;
 
@@ -47,22 +47,11 @@ public:
     SetJointState( ServiceMenu* host );
 
 private:
+    void report();
     void setup() override;
     State* update( float dt ) override;
 
     int m_joint;
-};
-
-class ServiceMenu::SetTrimState : public  State
-{
-public:
-    SetTrimState( ServiceMenu* host );
-
-private:
-    void setup() override;
-    State* update( float dt ) override;
-
-    int m_trim;
 };
 
 class ServiceMenu::EvaluateState : public  State
@@ -72,10 +61,9 @@ public:
 
 private:
     void setup() override;
-    State* update( float dt ) override;
+    State* update( float dt ) override;  
 
-    int m_x;
-    int m_y;
+    float m_x {}, m_y {};
 };
 
 ServiceMenu::SetLegState::SetLegState( ServiceMenu* host )
@@ -84,10 +72,17 @@ ServiceMenu::SetLegState::SetLegState( ServiceMenu* host )
 {
 }
 
+void ServiceMenu::SetLegState::report()
+{
+    Serial.print( "Current Leg is: " );
+    Serial.println( m_leg );
+    m_host->m_observer->setLeg( m_leg );
+}
+
 void ServiceMenu::SetLegState::setup()
 {
-    m_leg = 0;
-    m_host->m_observer->setLeg( m_leg );
+    Serial.println( "Set Leg by pressing Prev -> Next (Left stick)" );
+    report();
 }
 
 ServiceMenu::State* ServiceMenu::SetLegState::update( float dt )
@@ -97,7 +92,7 @@ ServiceMenu::State* ServiceMenu::SetLegState::update( float dt )
     switch( control.event )
     {
         case Controller::State::Event::Next:
-            ++setLeg;            
+            ++setLeg;
             break;
 
         case Controller::State::Event::Prev:                
@@ -106,14 +101,12 @@ ServiceMenu::State* ServiceMenu::SetLegState::update( float dt )
 
         case Controller::State::Event::Set:
             {
-                auto setJoint = m_host->m_states[SetJoint];
-                setJoint->setup();
-                return setJoint;
+                return m_host->m_states[SetJoint];
             }
             break;        
 
         case Controller::State::Event::Exit:
-            m_host->m_observer->exit();
+            m_host->m_observer->exitMenu();
             return nullptr;
             break;
 
@@ -132,7 +125,7 @@ ServiceMenu::State* ServiceMenu::SetLegState::update( float dt )
             setLeg = 0;
         }
         m_leg = setLeg;
-        m_host->m_observer->setLeg( m_leg );
+        report();
     }  
 
     return this;
@@ -140,14 +133,28 @@ ServiceMenu::State* ServiceMenu::SetLegState::update( float dt )
 
 ServiceMenu::SetJointState::SetJointState( ServiceMenu* host )
     : State( SetJoint, host )
-    , m_joint { 0 }
+    , m_joint { -1 }
 {
+}
+
+void ServiceMenu::SetJointState::report()
+{
+    Serial.print( "Current Joint is: " );
+    if( m_joint >= 0 )
+    {
+        Serial.println( m_joint );
+    }
+    else
+    {
+        Serial.println( "ALL" );
+    }
+    m_host->m_observer->setJoint( m_joint );
 }
 
 void ServiceMenu::SetJointState::setup()
 {
-    // iterate over -1 for evaluate
-    m_joint = -1;
+    Serial.println( "Set Leg's joint by pressing Prev -> Next (Left stick)" );
+    report();
 }
 
 ServiceMenu::SetJointState::State* ServiceMenu::SetJointState::update( float dt )
@@ -166,17 +173,13 @@ ServiceMenu::SetJointState::State* ServiceMenu::SetJointState::update( float dt 
 
         case Controller::State::Event::Set:
             {
-                State* next = nullptr;
-                if( m_joint == -1 )
-                {
-                    next = m_host->m_states[Evaluate];                    
-                }
-                else
-                {
-                    next = m_host->m_states[SetTrim];
-                }
-                next->setup();
-                return next;
+                return m_host->m_states[Evaluate];
+            }
+            break;
+
+        case Controller::State::Event::Exit:
+            {
+                return m_host->m_states[SetLeg];
             }
             break;
 
@@ -188,51 +191,14 @@ ServiceMenu::SetJointState::State* ServiceMenu::SetJointState::update( float dt 
     {
         if( setJoint < -1 )
         {
-            setJoint = 3;
+            setJoint = 2;
         }
-        else if( setJoint >= 3 )
+        else if( setJoint > 2 )
         {
             setJoint = -1;
         }
         m_joint = setJoint;
-        if ( m_joint >= 0)
-        m_host->m_observer->setJoint( m_joint );
-    }
-
-    return this;
-}
-
-ServiceMenu::SetTrimState::SetTrimState( ServiceMenu* host )
-    : State( SetTrim, host )
-    , m_trim { 0 }
-{
-}
-
-void ServiceMenu::SetTrimState::setup()
-{
-    m_trim = 0;
-}
-
-ServiceMenu::State* ServiceMenu::SetTrimState::SetTrimState::update( float dt )
-{
-    auto& control = m_host->m_controller.getState();
-
-    switch( control.event )
-    {
-        case Controller::State::Event::Value:
-            m_trim = control.args[0];
-            m_host->m_observer->setTrim( m_trim );
-            break;
-
-        case Controller::State::Event::Set:
-            m_host->m_observer->save();
-        case Controller::State::Event::Exit:
-            {
-                return m_host->m_states[SetJoint];
-            }
-            break;
-        default:
-            break;
+        report();
     }
 
     return this;
@@ -240,42 +206,50 @@ ServiceMenu::State* ServiceMenu::SetTrimState::SetTrimState::update( float dt )
 
 ServiceMenu::EvaluateState::EvaluateState( ServiceMenu* host )
     : State( Evaluate, host )
-    , m_x { 0 }
-    , m_y { 0 }
 {
 }
 
 void ServiceMenu::EvaluateState::setup()
 {
-    m_x = 0;
-    m_y = 0;
+    Serial.println( "Tune trim of given joint or entire leg by moving Right stick" );
+    m_x = m_y = 0.0f;
+    m_host->m_observer->enterEvaluate();
 }
 
-ServiceMenu::State* ServiceMenu::EvaluateState::update( float dt )
+ServiceMenu::State* ServiceMenu::EvaluateState::EvaluateState::update( float dt )
 {
     auto& control = m_host->m_controller.getState();
 
     switch( control.event )
     {
-        case Controller::State::Event::Value:
-            m_x = control.args[0];
-            m_y = control.args[1];
-            m_host->m_observer->evaluate( m_x, m_y );
-            break;
-
-        case Controller::State::Event::Set:
-            m_host->m_observer->save();
+        case Controller::State::Event::Set:            
         case Controller::State::Event::Exit:
             {
-                return m_host->m_states[SetLeg];
+                Serial.println( "Exiting menu" );
+                m_host->m_observer->exitEvaluate( control.event == Controller::State::Event::Set );
+                return m_host->m_states[SetJoint];
             }
             break;
+
         default:
+            {
+                static const float rate = 0.5;
+                m_x += control.args[0] * rate * dt;
+                m_y += control.args[1] * rate * dt;
+
+                if( m_x > 0.5 ) m_x = 0.5;
+                if( m_x < -0.5 ) m_x = -0.5;
+                if( m_y > 0.5 ) m_y = 0.5;
+                if( m_y < -0.5 ) m_y = -0.5;
+
+                m_host->m_observer->evaluate( m_x, m_y );
+            }            
             break;
     }
-
     return this;
 }
+
+
 
 ServiceMenu::ServiceMenu( const Controller & controller, Observer* observer )
     : m_controller { controller }
@@ -285,7 +259,6 @@ ServiceMenu::ServiceMenu( const Controller & controller, Observer* observer )
 
     m_states[State::SetLeg] = new SetLegState( this );
     m_states[State::SetJoint] = new SetJointState( this );
-    m_states[State::SetTrim] = new SetTrimState( this );
     m_states[State::Evaluate] = new EvaluateState( this );
 
     m_currentState = nullptr;
@@ -299,7 +272,6 @@ void ServiceMenu::init()
 {
     auto state = m_states[State::SetLeg];
     state->setup();
-
     m_currentState = state;
 }
 
@@ -308,6 +280,11 @@ void ServiceMenu::update( float dt )
     if( m_currentState )
     {
         auto next = m_currentState->update( dt );
-        m_currentState = next;
+        if( next != m_currentState )
+        {
+            if( next )
+                next->setup();
+            m_currentState = next;
+        }
     }
 }

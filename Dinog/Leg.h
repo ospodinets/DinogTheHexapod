@@ -13,7 +13,7 @@ public:
 
     void init( const LegConfig& config );
 
-    void setPos( const Vec3f& value );
+    void setPos( const Vec3f& value, bool force = false );
     const Vec3f& getPos() const;
     const Vec3f& getCenter();
 

@@ -8,6 +8,12 @@ namespace
     Control parseControl( const Controller::State& state )
     {
         Control ctrl;
+
+        ctrl.direction.set( state.args[0], 0.0f, 0.0f );
+        ctrl.torque = state.args[1];
+        ctrl.normal.set( state.args[2], state.args[3], 1.0f );
+        ctrl.normal.normalize();
+        ctrl.height = state.args[4];
         return ctrl;
     }
 }
@@ -20,73 +26,47 @@ public:
     { }
 
 private:
-    void setLeg( int i ) override 
+
+    void setLeg( int i ) override
     {
         m_currLeg = i;
-        m_untouched = getLegConfig( m_currLeg );        
     }
 
-    void setJoint( int i ) override 
+    void setJoint( int i ) override
     {
         m_currJoint = i;
     }
 
-    void setTrim( int val ) override 
+    void enterEvaluate() override
     {
-        auto& config = getLegConfig( m_currLeg );
-
-        switch( m_currJoint )
-        {
-            case 0:
-                config.coxaTrim = m_untouched.coxaTrim + val;
-                break;
-
-            case 1:
-                config.femurTrim = m_untouched.femurTrim + val;
-                break;
-
-            case 2:
-                config.tibiaTrim = m_untouched.tibiaTrim + val;
-                break;
-
-            default:
-                break;
-        }
+        m_host->m_observer->enterEvaluation( m_currLeg, m_currJoint );
     }
 
-    void save() override 
+    void evaluate( float x, float y ) override
     {
-        m_changed = true;
-        m_untouched = getLegConfig( m_currLeg );
+        m_host->m_observer->evaluate( x, y );
     }
 
-    void evaluate( int x, int y ) override
+    void exitEvaluate( bool save ) override
     {
-        
+        m_host->m_observer->exitEvaluation( save );
     }
-    
-    void exit() override 
+
+    void exitMenu() override
     {
-        if( m_changed )
-        {
-            saveConfig();
-            m_changed = true;
-        }
-            
-        m_host->m_observer->enableLocomotion( true );
-    }
+        m_host->m_observer->exitMenu();
+        m_host->m_serviceMenuActive = false;
+        m_host->m_controller.exitMenu();
+    }    
 
 private:
     InputHandler* m_host;
     int m_currLeg;
-    int m_currJoint;
-
-    LegConfig m_untouched;
-    bool m_changed {};
+    int m_currJoint;    
 };
 
 
-InputHandler::InputHandler( const Controller & controller, Observer * observer )
+InputHandler::InputHandler( Controller & controller, Observer * observer )
     : m_controller { controller }
     , m_observer { observer }
     , m_serviceMenuActive { false }
@@ -101,29 +81,38 @@ InputHandler::~InputHandler()
 void InputHandler::update( float dt )
 {
     auto control = m_controller.getState();
-
-    switch( control.event )
-    {
-        case Controller::State::Event::Control:
-            m_observer->setControl( parseControl( control ) );
-            break;
-
-        case Controller::State::Event::Gait:
-            break;
-
-        case Controller::State::Event::Menu:
-            m_observer->enableLocomotion( false );
-            m_serviceMenu.init();
-            break;
-
-        default:
-            break;
-    }
-
     if( m_serviceMenuActive )
     {
         m_serviceMenu.update( dt );
     }
+    else
+    {
+        switch( control.event )
+        {
+            case Controller::State::Event::Control:
+                if( !m_ready )
+                {
+                    m_observer->ready();
+                    m_ready = true;
+                }
+
+                m_observer->setControl( parseControl( control ) );
+                break;
+
+            case Controller::State::Event::Gait:
+                break;
+
+            case Controller::State::Event::Menu:
+                Serial.println( "Service menu active" );
+                m_observer->enterMenu();
+                m_serviceMenu.init();
+                m_serviceMenuActive = true;
+                break;
+
+            default:
+                break;
+        }
+    }    
 }
 
 

@@ -9,10 +9,24 @@ namespace
     public:
 
     private:
-        void enableLocomotion( bool enable ) override;
-        void setControl( const Control& control ) override;        
-        void evaluateLeg( int leg, const Vec3f& pos ) override;
+        void ready() override;
+        void setControl( const Control& control ) override;
+        void enterMenu() override;
+        void enterEvaluation( int leg, int joint ) override;
+        void evaluate( float x, float y ) override;
+        void exitEvaluation( bool save ) override;
+        void exitMenu() override;
     };
+
+    int trimValue( float x )
+    {
+        return int( x * 30 );
+    }
+
+    Vec3f evalValue( float x, float y )
+    {
+        return Vec3f( x * 100.0f, y * 100.0f, 0.0f );
+    }
 }
 
 unsigned long lastFrame = 0;
@@ -21,11 +35,16 @@ Controller controller;
 
 InputObserver inputObserver;
 InputHandler input { controller, &inputObserver };
-bool locomotionEnabled = true;
 
-void InputObserver::enableLocomotion( bool enable )
+int legTrimming {};
+int jointTrimming {};
+LegConfig untouched;
+bool changed {};
+float prev_x {}, prev_y {};
+
+void InputObserver::ready()
 {
-    locomotionEnabled = enable;
+    mover.enableLocomotion( true );
 }
 
 void InputObserver::setControl( const Control& control )
@@ -33,9 +52,91 @@ void InputObserver::setControl( const Control& control )
     mover.setControl( control );
 }
 
-void InputObserver::evaluateLeg( int leg, const Vec3f& pos )
+void InputObserver::enterMenu()
 {
-    mover.evaluateLeg( leg, pos );
+    mover.enableLocomotion( false );    
+}
+
+void InputObserver::enterEvaluation( int leg, int joint )
+{
+    legTrimming = leg;
+    jointTrimming = joint;
+    untouched = getLegConfig( leg );
+
+    if( jointTrimming >=0 )
+        Serial.print( "Current trim is: " );
+
+    switch( jointTrimming )
+    {
+        case 0:
+            Serial.println( untouched.coxaTrim );
+            break;
+
+        case 1:
+            Serial.println( untouched.femurTrim );
+            break;
+
+        case 2:
+            Serial.println( untouched.tibiaTrim );
+            break;
+
+        default:
+            break;
+    }
+}
+
+void InputObserver::evaluate( float x, float y )
+{
+    if( fabs( prev_x - x ) < F_TOLERANCE || fabs( prev_y - y ) < F_TOLERANCE )
+        return;
+
+    prev_x = x;
+    prev_y = y;
+
+    auto& config = getLegConfig( legTrimming );
+
+    if( jointTrimming < 0 )
+    {
+        mover.evaluateLeg( legTrimming, evalValue( x, y ) );
+    }
+    else
+    {
+        switch( jointTrimming )
+        {
+            case 0:
+                config.coxaTrim = untouched.coxaTrim + trimValue( x );
+                break;
+
+            case 1:
+                config.femurTrim = untouched.femurTrim + trimValue( x );
+                break;
+
+            case 2:
+                config.tibiaTrim = untouched.tibiaTrim + trimValue( x );
+                break;
+
+            default:
+                break;
+        }
+        mover.centerLeg( legTrimming );
+    }    
+}
+void InputObserver::exitEvaluation( bool save )
+{
+    if( save )
+    {
+        untouched = getLegConfig( legTrimming );
+        changed = true;
+    }
+    mover.centerLeg( legTrimming );
+}
+void InputObserver::exitMenu()
+{
+    if( changed )
+    {
+        saveConfig();
+    }
+    mover.enableLocomotion( true );
 }
 
 // The setup() function runs once each time the micro-controller starts
@@ -43,6 +144,7 @@ void setup()
 {
     Serial.begin( 9600 );
     Serial.println( "Dinog, The Hexapod Setup" );
+    loadConfig();
     lastFrame = millis();
     controller.init();
     mover.init();

@@ -9,7 +9,7 @@ public:
     {
         enum class Event
         {
-            Undefined,
+            Undefined = 0,
             Control,
             Gait,            
             Menu,
@@ -19,10 +19,9 @@ public:
             Prev,
             Set,
             Exit,
-            Value,
         } event { Event::Undefined };
         
-        int args[16] {};
+        float args[16] {};
     };
 
     Controller();
@@ -35,8 +34,23 @@ public:
 
     void init();
     void update( float dt );
+    void exitMenu();
 
-private:
+private:  
+    struct BoolChannelState
+    {
+        bool on { false };
+        float delay {};
+    };
+
     SBUS m_receiver;
     State m_state;
+    uint16_t m_channels[16];
+
+    bool m_initialized { false };
+    bool m_menuMode { false };
+    
+    BoolChannelState m_boolChannels[4];
+
+    
 };

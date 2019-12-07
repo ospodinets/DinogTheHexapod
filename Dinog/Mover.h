@@ -16,6 +16,7 @@ public:
 
     void enableLocomotion( bool enable );
     void evaluateLeg( int leg, const Vec3f& pos );
+    void centerLeg( int leg );
 
 private:
     LegController m_legs[NUM_LEGS];

@@ -53,24 +53,14 @@ void Leg::init( const LegConfig& config )
 
     setPos( getCenter() );
 
-    Serial.print( "Init leg: " );
-
-    Serial.print( "Coxa: " );
-    Serial.print( m_config->coxaPin, DEC );
-    Serial.print( " Femur: " );
-    Serial.print( m_config->femurPin, DEC );
-    Serial.print( " Tibia: " );
-    Serial.print( m_config->tibiaPin, DEC );
-    Serial.print( "\n" );
-
     m_coxa.attach( m_config->coxaPin );
     m_femur.attach( m_config->femurPin );
     m_tibia.attach( m_config->tibiaPin );
 }
 
-void Leg::setPos( const Vec3f & value )
+void Leg::setPos( const Vec3f & value, bool force = false )
 {
-    if( !m_position.equal( value, F_TOLERANCE ) )
+    if( !m_position.equal( value, F_TOLERANCE ) || force )
     {
         int coxa, femur, tibia;
         m_position = value;
