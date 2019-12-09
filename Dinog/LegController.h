@@ -24,7 +24,7 @@ public:
 
 private:
     Leg m_leg;
-    Vec3f m_p0, m_p1;
+    Vec3f m_p0, m_p1, m_p;
     float m_phaze;
     float m_lastPhaze;
     Mat4x4 m_transform;

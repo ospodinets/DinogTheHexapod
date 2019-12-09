@@ -33,7 +33,7 @@ void Mover::setControl( const Control& control )
         // auto config = getLegConfig( i );
         // Solver: process input and evaluate Locomotion Vectors for each leg
         // Set Locomotion Vectors to leg controllers
-        //m_legs[i].setLocomotionVector( Vec3f { 0, i < 3 ? 20 : -20, 0 } );
+        m_legs[i].setLocomotionVector( Vec3f { 0, i < 3 ? -20 : 20, 0 } );
     }
 
     m_control = control;
@@ -43,10 +43,16 @@ void Mover::update( float dt )
 {
     if( m_locomotionEnabled )
     {
-        auto velocity = m_control.direction.length2();
+        auto velocity = m_control.direction.length();
+
+        static const float max_spd_mul = 6.0f;
 
         // add multiplier to control gait speed
-        m_time += dt / 2;
+        auto timeshift = max_spd_mul * velocity;
+        if( timeshift < 1.0f )
+            timeshift = 1.0f;
+        m_time += timeshift * dt;
+        //m_time += dt;
 
         auto gait = Gait::query( velocity, m_time );
 

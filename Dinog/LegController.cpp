@@ -28,6 +28,7 @@ namespace
 LegController::LegController()
     : m_p0 { }
     , m_p1 { }
+    , m_p {}
     , m_phaze { 0.5 }
     , m_lastPhaze { 0.5 }
     , m_transform { 1.0f }    
@@ -42,7 +43,7 @@ void LegController::init( const LegConfig& legConfig )
     m_transform.mult( Mat4x4::translationMatrix( legConfig.offset ) );
     m_transform.mult( legConfig.rotation.toMatrix() );
 
-    m_p0 = m_p1 = m_leg.getCenter();
+    m_p = m_p0 = m_p1 = m_leg.getCenter();
     m_leg.init( legConfig );    
 }
 
@@ -51,32 +52,33 @@ void LegController::setLocomotionVector( const Vec3f & val )
     // calculate p0, p1
 
     // TEMP
-    //m_p0.set( LegConfig::L1 + LegConfig::L2 - 10, -val[1], -LegConfig::L3 );
-    //m_p1.set( LegConfig::L1 + LegConfig::L2 - 10, val[1], -LegConfig::L3 );
-    m_p1 = m_p0 = m_leg.getCenter();
+    m_p0.set( LegConfig::L1 + LegConfig::L2 - 10, -val[1], -LegConfig::L3 );
+    m_p1.set( LegConfig::L1 + LegConfig::L2 - 10, val[1], -LegConfig::L3 );
+    //m_p1 = m_p0 = m_leg.getCenter();
 }
 
 void LegController::evaluate( float phaze )
-{
-    if( fabs( phaze - m_lastPhaze ) > F_TOLERANCE )
+{    
+    bool stance = false;
+    if( fabs( phaze ) < F_TOLERANCE )
     {
-        bool stance = false;
-        if( fabs( phaze ) < F_TOLERANCE )
-        {
-            stance = m_lastPhaze < 0;
-        }
-        else
-        {
-            stance = phaze > 0;
-        }
-
-        auto pos = stance ? evaluateStance( phaze, m_p0, m_p1 ) :
-            evaluateSwing( phaze, m_p0, m_p1 );
-
-        m_leg.setPos( pos );
-
-        m_lastPhaze = phaze;
+        stance = m_lastPhaze < 0;
     }
+    else
+    {
+        stance = phaze > 0;
+    }
+
+    auto pos = stance ? evaluateStance( phaze, m_p0, m_p1 ) :
+        evaluateSwing( phaze, m_p0, m_p1 );
+
+    auto pi = m_p + (pos - m_p) * 0.1;
+        
+    m_leg.setPos( pi );
+    m_p = pi;
+
+    m_lastPhaze = phaze;
+
 }
 
 void LegController::moveToPos( const Vec3f& pos )
