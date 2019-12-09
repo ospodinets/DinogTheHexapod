@@ -13,6 +13,8 @@ namespace
     const int s_minUntrimmed = 180;
     const int s_maxUntrimmed = 1800; 
 
+    int n_tol = 10;
+
     const float s_delay = 0.05f;
 }
 
@@ -54,10 +56,10 @@ void Controller::update( float dt )
                 m_state.event = State::Event::Menu;
                 Serial.println( "\tmenu mode: on" );
 
-                m_boolChannels[0].on = m_channels[s_NextChannelId] > s_maxUntrimmed;
-                m_boolChannels[1].on = m_channels[s_PrevChannelId] < s_minUntrimmed;
-                m_boolChannels[2].on = m_channels[s_SetChannelId] > s_maxUntrimmed;
-                m_boolChannels[3].on = m_channels[s_ExitChannelId] < s_minUntrimmed;
+                m_boolChannels[0].on = abs( m_channels[s_NextChannelId] - s_maxUntrimmed ) < n_tol;
+                m_boolChannels[1].on = abs( m_channels[s_PrevChannelId] - s_minUntrimmed ) < n_tol;
+                m_boolChannels[2].on = abs( m_channels[s_SetChannelId] - s_maxUntrimmed ) < n_tol;
+                m_boolChannels[3].on = abs( m_channels[s_ExitChannelId] - s_minUntrimmed ) < n_tol;
                 return;
             }            
         }
@@ -68,7 +70,7 @@ void Controller::update( float dt )
 
     if( m_menuMode )
     {
-        bool isOn = m_channels[s_NextChannelId] > s_maxUntrimmed; 
+        bool isOn = abs( m_channels[s_NextChannelId] - s_maxUntrimmed ) < n_tol;
         if( isOn != m_boolChannels[0].on )
         {
             if( !isOn && m_boolChannels[0].delay > s_delay )
@@ -83,7 +85,7 @@ void Controller::update( float dt )
             m_boolChannels[0].delay += dt;
         }
 
-        isOn = m_channels[s_PrevChannelId] < s_minUntrimmed;
+        isOn = abs( m_channels[s_PrevChannelId] - s_minUntrimmed ) < n_tol;
         if( isOn != m_boolChannels[1].on )
         {
             if( !isOn && m_boolChannels[1].delay > s_delay )
@@ -98,7 +100,7 @@ void Controller::update( float dt )
             m_boolChannels[1].delay += dt;
         }
 
-        isOn = m_channels[s_SetChannelId] > s_maxUntrimmed;
+        isOn = abs( m_channels[s_SetChannelId] - s_maxUntrimmed ) < n_tol;
         if( isOn != m_boolChannels[2].on )
         {
             if( !isOn && m_boolChannels[2].delay > s_delay )
@@ -113,7 +115,7 @@ void Controller::update( float dt )
             m_boolChannels[2].delay += dt;
         }
 
-        isOn = m_channels[s_ExitChannelId] < s_minUntrimmed;
+        isOn = abs( m_channels[s_ExitChannelId] - s_minUntrimmed ) < n_tol;
         if( isOn != m_boolChannels[3].on )
         {
             if( !isOn && m_boolChannels[3].delay > s_delay )
@@ -128,18 +130,18 @@ void Controller::update( float dt )
             m_boolChannels[3].delay += dt;
         }  
 
-        m_state.args[0] = map_f( m_channels[s_ValueXChannelId], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f );
-        m_state.args[1] = map_f( m_channels[s_ValueYChannelId], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f );
+        m_state.args[0] = map_f( m_channels[s_ValueXChannelId], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
+        m_state.args[1] = map_f( m_channels[s_ValueYChannelId], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
     }
     else
     {
         m_state.event = State::Event::Control;
 
-        m_state.args[0] = map_f( m_channels[0], s_minUntrimmed, s_maxUntrimmed, 0.0f, 1.0f );
-        m_state.args[1] = map_f( m_channels[1], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f );
-        m_state.args[2] = map_f( m_channels[2], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f );
-        m_state.args[3] = map_f( m_channels[3], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f );
-        m_state.args[4] = map_f( m_channels[4], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f );
+        m_state.args[0] = map_f( m_channels[0], s_minUntrimmed, s_maxUntrimmed, 0.0f, 1.0f, n_tol );
+        m_state.args[1] = map_f( m_channels[1], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
+        m_state.args[2] = map_f( m_channels[2], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
+        m_state.args[3] = map_f( m_channels[3], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
+        m_state.args[4] = map_f( m_channels[4], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
     }
 
 }
