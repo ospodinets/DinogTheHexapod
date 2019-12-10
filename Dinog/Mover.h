@@ -7,7 +7,6 @@ class Mover
 {
 public:
     Mover();
-    ~Mover();
 
     void init();
 

@@ -2,14 +2,14 @@
 #include "Arduino.h"
 #include "Gait.h"
 
-Mover::Mover()
+namespace
 {
-    
+    const float SPEED_MULTIPLIER = 6.0f;
 }
 
-Mover::~Mover()
-{
-    Gait::release();    
+
+Mover::Mover()
+{    
 }
 
 void Mover::init()
@@ -45,14 +45,12 @@ void Mover::update( float dt )
     {
         auto velocity = m_control.direction.length();
 
-        static const float max_spd_mul = 6.0f;
-
         // add multiplier to control gait speed
-        auto timeshift = max_spd_mul * velocity;
-        if( timeshift < 1.0f )
-            timeshift = 1.0f;
-        m_time += timeshift * dt;
-        //m_time += dt;
+        // auto timeshift = SPEED_MULTIPLIER * velocity;
+        // if( timeshift < 1.0f )
+        //     timeshift = 1.0f;
+        // m_time += timeshift * dt;
+        m_time += dt / 3;
 
         auto gait = Gait::query( velocity, m_time );
 

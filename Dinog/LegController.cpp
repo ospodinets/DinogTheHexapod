@@ -2,9 +2,12 @@
 #include "Common.h"
 #include "Arduino.h"
 
+#include <MathUtils.h>
+
 namespace
 {
     static const float S_MAXZ = 70.0f;
+    static const float SMOOTH_FACTOR = 0.05f;
 
     Vec3f evaluateSwing( float phaze, const Vec3f& p0, const Vec3f& p1 )
     {
@@ -72,11 +75,13 @@ void LegController::evaluate( float phaze )
     auto pos = stance ? evaluateStance( phaze, m_p0, m_p1 ) :
         evaluateSwing( phaze, m_p0, m_p1 );
 
-    auto pi = m_p + (pos - m_p) * 0.1;
-        
-    m_leg.setPos( pi );
-    m_p = pi;
-
+    // Smooth movement by incremental approach
+    if( !m_p.equal( pos, F_TOLERANCE ) )
+    {
+        auto pi = m_p + ( pos - m_p ) * SMOOTH_FACTOR;        
+        m_p = pi;
+    }
+    m_leg.setPos( m_p );
     m_lastPhaze = phaze;
 
 }

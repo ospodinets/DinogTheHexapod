@@ -1,6 +1,8 @@
 #include "Controller.h"
 #include "Common.h"
 
+#include <MathUtils.h>
+
 namespace
 {
     const int s_NextChannelId = 1;

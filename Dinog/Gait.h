@@ -4,8 +4,7 @@
 
 class Gait
 {
-public:        
-    virtual ~Gait();
+public:
 
     // T
     float period() const; 
@@ -20,7 +19,6 @@ public:
 
     // Gait state machine
     static const Gait* const query( float velocity, float t );
-    static void release();
 
 protected:
     Gait();
