@@ -4,6 +4,9 @@
 #include "Vec3f.h"
 #include "Quat.h"
 
+static const float F_TOLERANCE = 1e-03;
+static const int NUM_LEGS = 6;
+
 struct Control
 {    
     Vec3f direction { 0.0f, 0.0f, 0.0f };
@@ -37,11 +40,4 @@ void saveConfig();
 
 void startLegTransaction();
 void commitLegTransaction( int milliseconds );
-
-float lerp( float v0, float v1, float t );
-float map_f( long x, long in_min, long in_max, float out_min, float out_max, int n_tol );
-
-
-#define F_TOLERANCE 1e-03
-#define NUM_LEGS 6
 

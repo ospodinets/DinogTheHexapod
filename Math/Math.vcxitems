@@ -20,11 +20,13 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Mat3x3.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Mat4x4.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MathUtils.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Quat.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Vec3f.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Vec4f.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MathUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Vec4f.cpp" />
   </ItemGroup>
 </Project>
