@@ -16,9 +16,13 @@ float lerp( float v0, float v1, float t0, float t1, float t )
 float map_f( long x, long in_min, long in_max, float out_min, float out_max, int n_tol )
 {
     if( abs( x - in_min ) < n_tol )
-        x = in_min;
+    {
+        return out_min;
+    }   
+    
     if( abs( x - in_max ) < n_tol )
-        x = in_max;
-    float val = float( x - in_min ) * ( out_max - out_min ) / float( in_max - in_min ) + out_min;
-    return val;
+    {
+        return out_max;
+    }    
+    return float( x - in_min ) * ( out_max - out_min ) / float( in_max - in_min ) + out_min;
 }
