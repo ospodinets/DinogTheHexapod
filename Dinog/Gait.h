@@ -6,19 +6,14 @@ class Gait
 {
 public:
 
-    // T
-    float period() const; 
-    bool isPeriodic() const;
-
     // t = [0; T]
     // phase = f(t) 0 -> 1 or -1
     // phase < 0 - swing 
     // phase > 0 - stance
-
     float evaluate( int legIndex, float t ) const;
 
     // Gait state machine
-    static const Gait* const query( float velocity, float t );
+    static const Gait* const query( float velocity, float t );   
 
 protected:
     Gait();
@@ -28,5 +23,5 @@ private:
 
 protected:
     float m_period { 1.0f };
-    float m_offsets[NUM_LEGS] {};    
+    float m_offsets[NUM_LEGS] {};
 };
