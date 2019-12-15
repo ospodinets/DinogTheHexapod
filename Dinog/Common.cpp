@@ -25,7 +25,9 @@ LegConfig& getLegConfig( int index )
 
 void loadConfig()
 {
+#ifdef DEBUG_TRACE
     Serial.println( "Load Trims: " );
+#endif
     int addr = 0;
     for( int i = 0; i < NUM_LEGS; i++ )
     {
@@ -34,7 +36,7 @@ void loadConfig()
         cfg.coxaTrim = ( int8_t )EEPROM.read( addr++ );
         cfg.femurTrim = ( int8_t ) EEPROM.read( addr++ );
         cfg.tibiaTrim = ( int8_t ) EEPROM.read( addr++ );
-
+#ifdef DEBUG_TRACE
         Serial.print( "Leg: " );
         Serial.print( i );
         Serial.print( " " );
@@ -43,12 +45,15 @@ void loadConfig()
         Serial.print( cfg.femurTrim );
         Serial.print( " " );
         Serial.println( cfg.tibiaTrim );
+#endif
     }
 }
 
 void saveConfig()
 {
+#ifdef DEBUG_TRACE
     Serial.println( "Saving Trims: " );
+#endif
     int addr = 0;
     for( int i = 0; i < NUM_LEGS; i++ )
     {
@@ -57,7 +62,7 @@ void saveConfig()
         EEPROM.update( addr++, cfg.coxaTrim );
         EEPROM.update( addr++, cfg.femurTrim );
         EEPROM.update( addr++, cfg.tibiaTrim );
-
+#ifdef DEBUG_TRACE
         Serial.print( "Leg: " );
         Serial.print( i );
         Serial.print( " " );
@@ -66,6 +71,7 @@ void saveConfig()
         Serial.print( cfg.femurTrim );
         Serial.print( " " );
         Serial.println( cfg.tibiaTrim );
+#endif
     }
 }
 
