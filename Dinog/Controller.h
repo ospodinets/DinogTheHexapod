@@ -37,6 +37,8 @@ public:
     void exitMenu();
 
 private:  
+    void swap();
+
     struct BoolChannelState
     {
         bool on { false };
@@ -45,7 +47,10 @@ private:
 
     SBUS m_receiver;
     State m_state;
-    uint16_t m_channels[16];
+    uint16_t m_buff1[16];
+    uint16_t m_buff2[16];
+    uint16_t* m_tmp;
+    uint16_t* m_curr;
 
     bool m_initialized { false };
     bool m_menuMode { false };

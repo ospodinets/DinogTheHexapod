@@ -23,6 +23,8 @@ namespace
 
 Controller::Controller()
     : m_receiver( Serial1 )
+    , m_tmp { m_buff1 }
+    , m_curr { m_buff2 }
 {       
 }
 
@@ -33,6 +35,9 @@ Controller::~Controller()
 
 void Controller::init()
 {
+#ifdef DEBUG_TRACE
+    Serial.println( "Initialize controller" );
+#endif
     m_receiver.begin();
 }
 
@@ -43,28 +48,38 @@ void Controller::update( float dt )
     m_state.event = State::Event::Undefined;
 
     bool failsafe, lost;
-    if( m_receiver.read( m_channels, &failsafe, &lost ) )
+    if( m_receiver.read( m_tmp, &failsafe, &lost ) )
     {
-        if( !m_initialized )
+        if( !failsafe && !lost )
         {
-            m_initialized = true;
-            // enter service menu if controller initialized with high value for the first channel
-            m_menuMode = m_channels[3] >= s_maxUntrimmed;
+            swap();
 
-            Serial.println( "Controller initialized" );
-
-            if( m_menuMode )
+            if( !m_initialized )
             {
-                m_state.event = State::Event::Menu;
-                Serial.println( "\tmenu mode: on" );
+                m_initialized = true;
+                // enter service menu if controller initialized with high value for the first channel
+                m_menuMode = m_curr[3] >= s_maxUntrimmed;
 
-                m_boolChannels[0].on = abs( m_channels[s_NextChannelId] - s_maxUntrimmed ) < n_tol;
-                m_boolChannels[1].on = abs( m_channels[s_PrevChannelId] - s_minUntrimmed ) < n_tol;
-                m_boolChannels[2].on = abs( m_channels[s_SetChannelId] - s_maxUntrimmed ) < n_tol;
-                m_boolChannels[3].on = abs( m_channels[s_ExitChannelId] - s_minUntrimmed ) < n_tol;
-                return;
-            }            
-        }
+                
+#ifdef DEBUG_TRACE
+                Serial.println( "Controller initialized" );
+#endif
+
+                if( m_menuMode )
+                {
+                    m_state.event = State::Event::Menu;
+#ifdef DEBUG_TRACE
+                    Serial.println( "\tmenu mode: on" );
+#endif                   
+
+                    m_boolChannels[0].on = abs( m_curr[s_NextChannelId] - s_maxUntrimmed ) < n_tol;
+                    m_boolChannels[1].on = abs( m_curr[s_PrevChannelId] - s_minUntrimmed ) < n_tol;
+                    m_boolChannels[2].on = abs( m_curr[s_SetChannelId] - s_maxUntrimmed ) < n_tol;
+                    m_boolChannels[3].on = abs( m_curr[s_ExitChannelId] - s_minUntrimmed ) < n_tol;
+                    return;
+                }
+            }
+        }        
     }
 
     if( !m_initialized )
@@ -72,7 +87,7 @@ void Controller::update( float dt )
 
     if( m_menuMode )
     {
-        bool isOn = abs( m_channels[s_NextChannelId] - s_maxUntrimmed ) < n_tol;
+        bool isOn = abs( m_curr[s_NextChannelId] - s_maxUntrimmed ) < n_tol;
         if( isOn != m_boolChannels[0].on )
         {
             if( !isOn && m_boolChannels[0].delay > s_delay )
@@ -87,7 +102,7 @@ void Controller::update( float dt )
             m_boolChannels[0].delay += dt;
         }
 
-        isOn = abs( m_channels[s_PrevChannelId] - s_minUntrimmed ) < n_tol;
+        isOn = abs( m_curr[s_PrevChannelId] - s_minUntrimmed ) < n_tol;
         if( isOn != m_boolChannels[1].on )
         {
             if( !isOn && m_boolChannels[1].delay > s_delay )
@@ -102,7 +117,7 @@ void Controller::update( float dt )
             m_boolChannels[1].delay += dt;
         }
 
-        isOn = abs( m_channels[s_SetChannelId] - s_maxUntrimmed ) < n_tol;
+        isOn = abs( m_curr[s_SetChannelId] - s_maxUntrimmed ) < n_tol;
         if( isOn != m_boolChannels[2].on )
         {
             if( !isOn && m_boolChannels[2].delay > s_delay )
@@ -117,7 +132,7 @@ void Controller::update( float dt )
             m_boolChannels[2].delay += dt;
         }
 
-        isOn = abs( m_channels[s_ExitChannelId] - s_minUntrimmed ) < n_tol;
+        isOn = abs( m_curr[s_ExitChannelId] - s_minUntrimmed ) < n_tol;
         if( isOn != m_boolChannels[3].on )
         {
             if( !isOn && m_boolChannels[3].delay > s_delay )
@@ -132,18 +147,18 @@ void Controller::update( float dt )
             m_boolChannels[3].delay += dt;
         }  
 
-        m_state.args[0] = map_f( m_channels[s_ValueXChannelId], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
-        m_state.args[1] = map_f( m_channels[s_ValueYChannelId], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
+        m_state.args[0] = map_f( m_curr[s_ValueXChannelId], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
+        m_state.args[1] = map_f( m_curr[s_ValueYChannelId], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
     }
     else
     {
         m_state.event = State::Event::Control;
 
-        m_state.args[0] = map_f( m_channels[0], s_minUntrimmed, s_maxUntrimmed, 0.0f, 1.0f, n_tol );
-        m_state.args[1] = map_f( m_channels[1], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
-        m_state.args[2] = map_f( m_channels[2], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
-        m_state.args[3] = map_f( m_channels[3], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
-        m_state.args[4] = map_f( m_channels[4], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
+        m_state.args[0] = map_f( m_curr[0], s_minUntrimmed, s_maxUntrimmed, 0.0f, 1.0f, n_tol );
+        m_state.args[1] = map_f( m_curr[1], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
+        m_state.args[2] = map_f( m_curr[2], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
+        m_state.args[3] = map_f( m_curr[3], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
+        m_state.args[4] = map_f( m_curr[4], s_minUntrimmed, s_maxUntrimmed, -0.5f, 0.5f, n_tol );
     }
 
 }
@@ -151,6 +166,13 @@ void Controller::update( float dt )
 void Controller::exitMenu()
 {
     m_menuMode = false;
+}
+
+void Controller::swap()
+{
+    auto tmp = m_tmp;
+    m_tmp = m_curr;
+    m_curr = tmp;
 }
 
 
