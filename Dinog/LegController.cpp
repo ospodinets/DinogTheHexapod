@@ -6,13 +6,13 @@
 
 namespace
 {
-    static const float S_MAXZ = 70.0f;
-    static const float SMOOTH_FACTOR = 0.05f;
+    static const float S_Z_SWING_ELEVATION = 40.0f;
+    static const float SMOOTH_FACTOR = 2;
 
     Vec3f evaluateSwing( float phaze, const Vec3f& p0, const Vec3f& p1 )
     {
         phaze = fabs( phaze );
-        auto midZ = ( p1[2] + p0[2] ) / 2 + S_MAXZ;
+        auto midZ = max( p1[2], p0[2] ) + S_Z_SWING_ELEVATION;
 
         return Vec3f { lerp( p1[0], p0[0], phaze ),
             lerp( p1[1], p0[1], phaze ),
@@ -32,8 +32,7 @@ LegController::LegController()
     : m_p0 { }
     , m_p1 { }
     , m_p {}
-    , m_phaze { 0.5 }
-    , m_lastPhaze { 0.5 }
+    , m_pTmp {}
     , m_transform { 1.0f }    
 {}
 
@@ -46,8 +45,9 @@ void LegController::init( const LegConfig& legConfig )
     m_transform.mult( Mat4x4::translationMatrix( legConfig.offset ) );
     m_transform.mult( legConfig.rotation.toMatrix() );
 
-    m_p = m_p0 = m_p1 = m_leg.getCenter();
-    m_leg.init( legConfig );    
+    m_pTmp = m_p = m_p0 = m_p1 = m_leg.getCenter();
+    m_leg.init( legConfig );  
+    m_stance = true;
 }
 
 void LegController::setLocomotionVector( const Vec3f & val )
@@ -55,35 +55,39 @@ void LegController::setLocomotionVector( const Vec3f & val )
     // calculate p0, p1
 
     // TEMP
-    m_p0.set( LegConfig::L1 + LegConfig::L2 - 10, -val[1], -LegConfig::L3 );
-    m_p1.set( LegConfig::L1 + LegConfig::L2 - 10, val[1], -LegConfig::L3 );
+    m_p0.set( LegConfig::L1 + LegConfig::L2 - 10, -val[1], -LegConfig::L3 + 10 );
+    m_p1.set( LegConfig::L1 + LegConfig::L2 - 10, val[1], -LegConfig::L3 + 10 );    
+
     //m_p1 = m_p0 = m_leg.getCenter();
 }
 
 void LegController::evaluate( float phaze )
-{    
-    bool stance = false;
-    if( fabs( phaze ) < F_TOLERANCE )
-    {
-        stance = m_lastPhaze < 0;
-    }
-    else
-    {
-        stance = phaze > 0;
-    }
+{   
+    bool stance = phaze >= 0;
 
-    auto pos = stance ? evaluateStance( phaze, m_p0, m_p1 ) :
-        evaluateSwing( phaze, m_p0, m_p1 );
-
-    // Smooth movement by incremental approach
-    if( !m_p.equal( pos, F_TOLERANCE ) )
+    if( m_stance != stance )
     {
-        auto pi = m_p + ( pos - m_p ) * SMOOTH_FACTOR;        
-        m_p = pi;
-    }
-    m_leg.setPos( m_p );
-    m_lastPhaze = phaze;
+        // phaze switched
+        // if swing is activated, current leg position is used as p1 
+        // so, we can turn on swing at any time
 
+        if( !stance )
+        {
+            m_pTmp = m_p;
+        }
+        else
+        {
+            m_pTmp = m_p1;
+        }
+        m_stance = stance;
+    }    
+
+    auto p = stance ? evaluateStance( phaze, m_p0, m_p1 ) :
+        evaluateSwing( phaze, m_p0, m_pTmp );
+
+    auto smoothed = m_p + ( p - m_p  ) / SMOOTH_FACTOR;
+    m_p = smoothed;
+    m_leg.setPos( smoothed );
 }
 
 void LegController::moveToPos( const Vec3f& pos )

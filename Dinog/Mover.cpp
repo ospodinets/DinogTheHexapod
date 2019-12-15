@@ -2,6 +2,7 @@
 #include "Arduino.h"
 #include "Gait.h"
 
+#define UPD_SPEED 1
 namespace
 {
     const float SPEED_MULTIPLIER = 6.0f;
@@ -33,7 +34,7 @@ void Mover::setControl( const Control& control )
         // auto config = getLegConfig( i );
         // Solver: process input and evaluate Locomotion Vectors for each leg
         // Set Locomotion Vectors to leg controllers
-        m_legs[i].setLocomotionVector( Vec3f { 0, i < 3 ? -20 : 20, 0 } );
+        m_legs[i].setLocomotionVector( Vec3f { 0, i < 3 ? -30 : 30, 0 } );
     }
 
     m_control = control;
@@ -45,13 +46,13 @@ void Mover::update( float dt )
     {
         auto velocity = m_control.direction.length();
 
+#if UPD_SPEED
         // add multiplier to control gait speed
-        // auto timeshift = SPEED_MULTIPLIER * velocity;
-        // if( timeshift < 1.0f )
-        //     timeshift = 1.0f;
-        // m_time += timeshift * dt;
-        m_time += dt / 3;
-
+        auto timeshift = SPEED_MULTIPLIER * velocity;
+        m_time += timeshift * dt;
+#else
+        m_time += dt / 2;
+#endif
         auto gait = Gait::query( velocity, m_time );
 
         // for each leg in the array
