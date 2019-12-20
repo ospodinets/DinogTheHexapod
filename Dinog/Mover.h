@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "LegController.h"
+#include "Solver.h"
 
 class Mover
 {
@@ -22,4 +23,5 @@ private:
     Control m_control;
     float m_time { 0 };
     bool m_locomotionEnabled { false };
+    Solver m_solver;
 };

@@ -6,8 +6,36 @@
 
 namespace
 {
+
+    void printM( const Mat4x4& mat )
+    {
+        for( int i = 0; i < 4; ++i )
+        {
+            Serial.print( "|" );
+            for( int j = 0; j < 4; ++j )
+            {
+                Serial.print( mat[i][j] );
+                if( j != 3 )
+                    Serial.print( ", " );
+            }
+            Serial.println( "|" );
+        }
+    }
+
+    void printQ( const Quat& q )
+    {
+        Serial.print( "Q[" );
+        for( int i = 0; i < 4; ++i )
+        {   
+            Serial.print( q[i] );  
+            if( i != 3 )
+                Serial.print( ", " );
+        }
+        Serial.println( "]" );
+    }
+
     static const float S_Z_SWING_ELEVATION = 40.0f;
-    static const float SMOOTH_FACTOR = 2;
+    static const float SMOOTH_FACTOR = 4;
 
     Vec3f evaluateSwing( float phaze, const Vec3f& p0, const Vec3f& p1 )
     {
@@ -33,7 +61,7 @@ LegController::LegController()
     , m_p1 { }
     , m_p {}
     , m_pTmp {}
-    , m_transform { 1.0f }    
+    , m_rot { 1.0f }
 {}
 
 LegController::~LegController()
@@ -41,28 +69,39 @@ LegController::~LegController()
 }
 
 void LegController::init( const LegConfig& legConfig )
-{
-    m_transform.mult( Mat4x4::translationMatrix( legConfig.offset ) );
-    m_transform.mult( legConfig.rotation.toMatrix() );
+{   
+    m_rot = legConfig.rotation.toMatrix3x3();
+    m_rot.inverse();
 
-    m_pTmp = m_p = m_p0 = m_p1 = m_leg.getCenter();
+    m_pT0 = m_pT1 = m_pTmp = m_p = m_p0 = m_p1 = m_leg.getCenter();
     m_leg.init( legConfig );  
     m_stance = true;
 }
 
-void LegController::setLocomotionVector( const Vec3f & val )
+void LegController::setInput( const Vec3f& locomotionVector, float elevation )
 {
-    // calculate p0, p1
-
-    // TEMP
-    m_p0.set( LegConfig::L1 + LegConfig::L2 - 10, -val[1], -LegConfig::L3 + 10 );
-    m_p1.set( LegConfig::L1 + LegConfig::L2 - 10, val[1], -LegConfig::L3 + 10 );    
-
-    //m_p1 = m_p0 = m_leg.getCenter();
+    auto VlocLen2 = locomotionVector.length2();
+    if( fabs( VlocLen2 ) < F_TOLERANCE )
+    {
+        m_pT0 = m_pT1 = m_leg.getCenter();
+    }
+    else
+    {
+        auto Vloc = m_rot.mult( locomotionVector );
+        auto Pc = m_leg.getCenter();
+        Pc[2] -= elevation; 
+        auto VlocHalf = Vloc * 0.5;
+        m_pT0 = Pc + VlocHalf;
+        m_pT1 = Pc - VlocHalf;
+    }
 }
 
 void LegController::evaluate( float phaze )
-{   
+{ 
+    // update end points
+    m_p0 = m_p0 + ( m_pT0 - m_p0 ) / SMOOTH_FACTOR;
+    m_p1 = m_p1 + ( m_pT1 - m_p1 ) / SMOOTH_FACTOR;
+
     bool stance = phaze >= 0;
 
     if( m_stance != stance )
@@ -82,12 +121,9 @@ void LegController::evaluate( float phaze )
         m_stance = stance;
     }    
 
-    auto p = stance ? evaluateStance( phaze, m_p0, m_p1 ) :
-        evaluateSwing( phaze, m_p0, m_pTmp );
-
-    auto smoothed = m_p + ( p - m_p  ) / SMOOTH_FACTOR;
-    m_p = smoothed;
-    m_leg.setPos( smoothed );
+    m_p = stance ? evaluateStance( phaze, m_p0, m_p1 ) :
+        evaluateSwing( phaze, m_p0, m_pTmp );    
+    m_leg.setPos( m_p );
 }
 
 void LegController::moveToPos( const Vec3f& pos )

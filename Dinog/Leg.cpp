@@ -23,7 +23,7 @@ namespace
         auto L4_2 = ( P0 - LegConfig::L1 ) * ( P0 - LegConfig::L1 ) + Pz_2;
         auto L4 = sqrt( L4_2 );
 
-        coxaValue = degrees( atan( pos[1] / pos[0] ) ) + legConfig.coxaTrim;
+        coxaValue = degrees( atan( -pos[1] / pos[0] ) ) + legConfig.coxaTrim;
         float fFemurValue = acos( ( L2_2 + L4_2 - L3_2 ) / ( 2 * LegConfig::L2 * L4 ) ) + atan( pos[2] / ( P0 - LegConfig::L1 ) );
         if( legConfig.inverted )
             fFemurValue = -fFemurValue;

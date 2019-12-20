@@ -2,6 +2,7 @@
 
 #include "Vec3f.h"
 #include "Mat4x4.h"
+#include "Mat3x3.h"
 
 class Quat
 {
@@ -28,10 +29,11 @@ public:
 
     Quat( const Vec3f &axis, float angle )
     {
-        float w = cosf( angle * 0.5f );
-        float k = sinf( angle * 0.5f );
+        float ahalf = angle * 0.5f;
+        float a = cosf( ahalf );
+        float b = sinf( ahalf );
 
-        set( axis[0] * k, axis[0] * k, axis[1] * k, w );
+        set( axis[0] * b, axis[1] * b, axis[2] * b, a );
     }
 
     Quat& operator=( const Quat& other )
@@ -133,13 +135,40 @@ public:
         const float yz = q[1] * zs;
         const float zz = q[2] * zs;
 
-        Mat4x4 m {
-                Vec4f{ ( 1.0f - yy - zz ), ( xy + wz ), ( xz - wy ), 0.0f },
-                Vec4f { ( xy - wz ), ( 1.0f - xx - zz ), ( yz + wx ), 0.0f },
-                Vec4f { ( xz + wy ), ( yz - wx ), ( 1.0f - xx - yy ), 0.0f },
-                Vec4f { 0.f, 0.f, 0.f, 1.f } };
-        return m;
-        
+        return { Vec4f { ( 1.0f - yy - zz ), ( xy + wz ), ( xz - wy ), 0.0f },
+                 Vec4f { ( xy - wz ), ( 1.0f - xx - zz ), ( yz + wx ), 0.0f },
+                 Vec4f { ( xz + wy ), ( yz - wx ), ( 1.0f - xx - yy ), 0.0f },
+                 Vec4f { 0.f, 0.f, 0.f, 1.f } };
+    }
+
+    Mat3x3 toMatrix3x3() const
+    {
+        const float	d = dot( q );
+        float s;
+        if( d )
+            s = 2.0f / d;
+        else
+            s = 1.0f;
+
+        const float	xs = q[0] * s;
+        const float	ys = q[1] * s;
+        const float	zs = q[2] * s;
+        const float wx = q[3] * xs;
+        const float wy = q[3] * ys;
+        const float wz = q[3] * zs;
+        const float xx = q[0] * xs;
+        const float xy = q[0] * ys;
+        const float xz = q[0] * zs;
+        const float yy = q[1] * ys;
+        const float yz = q[1] * zs;
+        const float zz = q[2] * zs;
+
+        return { 
+            Vec3f { ( 1.0f - yy - zz ), ( xy + wz ), ( xz - wy ) },
+            Vec3f { ( xy - wz ), ( 1.0f - xx - zz ), ( yz + wx ) },
+            Vec3f { ( xz + wy ), ( yz - wx ), ( 1.0f - xx - yy ) }
+        };
+            
     }
 
 private:

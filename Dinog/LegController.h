@@ -3,7 +3,7 @@
 #include "Leg.h"
 
 #include <Vec3f.h>
-#include <Mat4x4.h>
+#include <Mat3x3.h>
 
 struct LegConfig;
 
@@ -15,7 +15,7 @@ public:
 
     void init( const LegConfig& legConfig );
 
-    void setLocomotionVector( const Vec3f& val );
+    void setInput( const Vec3f& locomotionVector, float elevation );
     void evaluate( float phaze );
 
     // used only if locomotion is disabled
@@ -25,7 +25,8 @@ public:
 private:
     Leg m_leg;
     Vec3f m_p0, m_p1, m_p, m_pTmp;
-    Mat4x4 m_transform;
+    Vec3f m_pT0, m_pT1;
+    Mat3x3 m_rot;
 
     bool m_stance;
 };

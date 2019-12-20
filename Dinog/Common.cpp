@@ -3,21 +3,15 @@
 #include "Arduino.h"
 #include <EEPROM.h>
 
-namespace 
-{
-    const int legsAddr = 0;
-}
-
-
 LegConfig& getLegConfig( int index )
 {
     static LegConfig s_config[] = {
-        /*0*/{ 4, 3, 2, false, Vec3f{ 38, 67, 0 }, Quat( Vec3f::Z(), radians(-30) ), 93, 100, 3 },
-        /*1*/ { 50, 51, 52, true, Vec3f { 0, 0, 0 }, Quat( Vec3f::Z(), radians( 0 ) ), 93, 100, 3 },
-        /*2*/{ 46, 47, 48, true, Vec3f { 0, 0, 0 }, Quat( Vec3f::Z(), radians( 0 ) ), 93, 100, 3 },
-        /*3*/{ 13, 12, 11, false, Vec3f { 0, 0, 0 }, Quat( Vec3f::Z(), radians( 0 ) ), 93, 100, 3 },
-        /*4*/{ 10, 9, 8, false, Vec3f { 0, 0, 0 }, Quat( Vec3f::Z(), radians( 0 ) ), 93, 100, 3 },
-        /*5*/{ 7, 6, 5, true, Vec3f { 0, 0, 0 }, Quat( Vec3f::Z(), radians( 0 ) ), 93, 100, 3 }
+        /*0*/{ 4, 3, 2, false,    Vec3f { 63.3, 37.8, 0 },  Quat( Vec3f::Z(), radians( 45 ) ),   93, 100, 3 },
+        /*1*/{ 50, 51, 52, true,  Vec3f { 0, 63, 0 },       Quat( Vec3f::Z(), radians( 90 ) ),   93, 100, 3 },
+        /*2*/{ 46, 47, 48, true,  Vec3f { -63.3, 37.8, 0 }, Quat( Vec3f::Z(), radians( 135 ) ),  93, 100, 3 },
+        /*3*/{ 13, 12, 11, false, Vec3f { -63.3, -37.8, 0 },Quat( Vec3f::Z(), radians( -135 ) ), 93, 100, 3 },
+        /*4*/{ 10, 9, 8, false,   Vec3f { 0, -63, 0 },      Quat( Vec3f::Z(), radians( -90 ) ),  93, 100, 3 },
+        /*5*/{ 7, 6, 5, true,     Vec3f { 63.3, -37.8, 0 }, Quat( Vec3f::Z(), radians( -45 ) ),  93, 100, 3 }
     };
 
     return s_config[index];

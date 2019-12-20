@@ -5,7 +5,7 @@
 #define UPD_SPEED 1
 namespace
 {
-    const float SPEED_MULTIPLIER = 6.0f;
+    const float SPEED_MULTIPLIER = 5.0f;
 }
 
 
@@ -28,36 +28,37 @@ void Mover::setControl( const Control& control )
     if( !m_locomotionEnabled )
         return;
 
-    // For each leg:
-    for( int i = 0; i < NUM_LEGS; ++i )
-    {
-        // auto config = getLegConfig( i );
-        // Solver: process input and evaluate Locomotion Vectors for each leg
-        // Set Locomotion Vectors to leg controllers
-        m_legs[i].setLocomotionVector( Vec3f { 0, i < 3 ? -30 : 30, 0 } );
-    }
-
     m_control = control;
+    m_solver.setControl( control );
 }
 
 void Mover::update( float dt )
 {
     if( m_locomotionEnabled )
     {
-        auto velocity = m_control.direction.length();
+        auto velocity = max( m_control.thr, 2.0 * fabs(m_control.torque) );
+        //auto velocity = m_control.thr;
 
 #if UPD_SPEED
         // add multiplier to control gait speed
         auto timeshift = SPEED_MULTIPLIER * velocity;
+        if( timeshift < 0.5f )
+            timeshift = 0.5f;
         m_time += timeshift * dt;
 #else
         m_time += dt / 2;
 #endif
         auto gait = Gait::query( velocity, m_time );
+        Vec3f locomotionVector {};
+        float elevation {};
 
         // for each leg in the array
         for( int i = 0; i < NUM_LEGS; ++i )
+        //for( int i = 0; i < 1; ++i )
         {
+            m_solver.evaluate( i, locomotionVector, elevation );
+            m_legs[i].setInput( locomotionVector, elevation );
+
             auto ph = gait->evaluate( i, m_time );
             m_legs[i].evaluate( ph );
         }

@@ -9,9 +9,9 @@ static const int NUM_LEGS = 6;
 
 struct Control
 {    
-    Vec3f direction { 0.0f, 0.0f, 0.0f };
+    Vec3f dir { 0.0f, 0.0f, 0.0f };
     float torque { 0.0f };
-    Vec3f normal { 0.0f, 0.0f, 1.0f };
+    float thr { 0.0f };
     float height { 0.0f };
 };
 

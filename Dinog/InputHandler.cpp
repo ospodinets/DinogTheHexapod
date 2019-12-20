@@ -9,10 +9,12 @@ namespace
     {
         Control ctrl;
 
-        ctrl.direction.set( state.args[0], 0.0f, 0.0f );
+        ctrl.thr = state.args[0];        
         ctrl.torque = state.args[1];
-        ctrl.normal.set( state.args[2], state.args[3], 1.0f );
-        ctrl.normal.normalize();
+        if( fabs( ctrl.torque ) < 0.05 )
+            ctrl.torque = 0.0f;
+        ctrl.dir.set( - state.args[3], - state.args[2], 1.0f );
+
         ctrl.height = state.args[4];
         return ctrl;
     }

@@ -163,9 +163,11 @@ namespace
 
 #endif // DEBUG_TRACE
 
-        static GaitMixer s_mixer;
-        s_mixer.setup( from, to, t, T );
-        return &s_mixer;
+        // static GaitMixer s_mixer;
+        // s_mixer.setup( from, to, t, T );
+        // return &s_mixer;
+
+        return to;
     }
 
 
@@ -462,16 +464,7 @@ Gait::Gait()
 
 float Gait::evaluate( int legIndex, float t ) const
 {
-    auto ph = onEval( legIndex, t );
-
-#ifdef DEBUG_TRACE
-    Serial.print( "Gait::evaluate(" );
-    Serial.print( t );
-    Serial.print( ")=" );
-    Serial.println( ph );
-#endif
-
-    return ph;
+    return onEval( legIndex, t );
 }
 
 const Gait* const Gait::query( float velocity, float t )

@@ -72,31 +72,30 @@ public:
         return m[row];
     }
 
-    Mat4x4 mult( const Mat4x4 rhs )
+    void mult( const Mat4x4& rhs )
     {
-        auto& ref = *this;
-        set( Vec4f( ref[0][0] * rhs[0][0] + ref[0][1] * rhs[1][0] + ref[0][2] * rhs[2][0] + ref[0][3] * rhs[3][0],
-            ref[0][0] * rhs[0][1] + ref[0][1] * rhs[1][1] + ref[0][2] * rhs[2][1] + ref[0][3] * rhs[3][1],
-            ref[0][0] * rhs[0][2] + ref[0][1] * rhs[1][2] + ref[0][2] * rhs[2][2] + ref[0][3] * rhs[3][2],
-            ref[0][0] * rhs[0][3] + ref[0][1] * rhs[1][3] + ref[0][2] * rhs[2][3] + ref[0][3] * rhs[3][3] ),
+        set( Vec4f( m[0][0] * rhs[0][0] + m[0][1] * rhs[1][0] + m[0][2] * rhs[2][0] + m[0][3] * rhs[3][0],
+            m[0][0] * rhs[0][1] + m[0][1] * rhs[1][1] + m[0][2] * rhs[2][1] + m[0][3] * rhs[3][1],
+            m[0][0] * rhs[0][2] + m[0][1] * rhs[1][2] + m[0][2] * rhs[2][2] + m[0][3] * rhs[3][2],
+            m[0][0] * rhs[0][3] + m[0][1] * rhs[1][3] + m[0][2] * rhs[2][3] + m[0][3] * rhs[3][3] ),
 
-            Vec4f( ref[1][0] * rhs[0][0] + ref[1][1] * rhs[1][0] + ref[1][2] * rhs[2][0] + ref[1][3] * rhs[3][0],
-                ref[1][0] * rhs[0][1] + ref[1][1] * rhs[1][1] + ref[1][2] * rhs[2][1] + ref[1][3] * rhs[3][1],
-                ref[1][0] * rhs[0][2] + ref[1][1] * rhs[1][2] + ref[1][2] * rhs[2][2] + ref[1][3] * rhs[3][2],
-                ref[1][0] * rhs[0][3] + ref[1][1] * rhs[1][3] + ref[1][2] * rhs[2][3] + ref[1][3] * rhs[3][3] ),
+            Vec4f( m[1][0] * rhs[0][0] + m[1][1] * rhs[1][0] + m[1][2] * rhs[2][0] + m[1][3] * rhs[3][0],
+                m[1][0] * rhs[0][1] + m[1][1] * rhs[1][1] + m[1][2] * rhs[2][1] + m[1][3] * rhs[3][1],
+                m[1][0] * rhs[0][2] + m[1][1] * rhs[1][2] + m[1][2] * rhs[2][2] + m[1][3] * rhs[3][2],
+                m[1][0] * rhs[0][3] + m[1][1] * rhs[1][3] + m[1][2] * rhs[2][3] + m[1][3] * rhs[3][3] ),
 
-            Vec4f( ref[2][0] * rhs[0][0] + ref[2][1] * rhs[1][0] + ref[2][2] * rhs[2][0] + ref[2][3] * rhs[3][0],
-                ref[2][0] * rhs[0][1] + ref[2][1] * rhs[1][1] + ref[2][2] * rhs[2][1] + ref[2][3] * rhs[3][1],
-                ref[2][0] * rhs[0][2] + ref[2][1] * rhs[1][2] + ref[2][2] * rhs[2][2] + ref[2][3] * rhs[3][2],
-                ref[2][0] * rhs[0][3] + ref[2][1] * rhs[1][3] + ref[2][2] * rhs[2][3] + ref[2][3] * rhs[3][3] ),
+            Vec4f( m[2][0] * rhs[0][0] + m[2][1] * rhs[1][0] + m[2][2] * rhs[2][0] + m[2][3] * rhs[3][0],
+                m[2][0] * rhs[0][1] + m[2][1] * rhs[1][1] + m[2][2] * rhs[2][1] + m[2][3] * rhs[3][1],
+                m[2][0] * rhs[0][2] + m[2][1] * rhs[1][2] + m[2][2] * rhs[2][2] + m[2][3] * rhs[3][2],
+                m[2][0] * rhs[0][3] + m[2][1] * rhs[1][3] + m[2][2] * rhs[2][3] + m[2][3] * rhs[3][3] ),
 
-            Vec4f( ref[3][0] * rhs[0][0] + ref[3][1] * rhs[1][0] + ref[3][2] * rhs[2][0] + ref[3][3] * rhs[3][0],
-                ref[3][0] * rhs[0][1] + ref[3][1] * rhs[1][1] + ref[3][2] * rhs[2][1] + ref[3][3] * rhs[3][1],
-                ref[3][0] * rhs[0][2] + ref[3][1] * rhs[1][2] + ref[3][2] * rhs[2][2] + ref[3][3] * rhs[3][2],
-                ref[3][0] * rhs[0][3] + ref[3][1] * rhs[1][3] + ref[3][2] * rhs[2][3] + ref[3][3] * rhs[3][3] ) );
+            Vec4f( m[3][0] * rhs[0][0] + m[3][1] * rhs[1][0] + m[3][2] * rhs[2][0] + m[3][3] * rhs[3][0],
+                m[3][0] * rhs[0][1] + m[3][1] * rhs[1][1] + m[3][2] * rhs[2][1] + m[3][3] * rhs[3][1],
+                m[3][0] * rhs[0][2] + m[3][1] * rhs[1][2] + m[3][2] * rhs[2][2] + m[3][3] * rhs[3][2],
+                m[3][0] * rhs[0][3] + m[3][1] * rhs[1][3] + m[3][2] * rhs[2][3] + m[3][3] * rhs[3][3] ) );
     }
 
-    Mat4x4 premult( const Mat4x4 lhs )
+    void premult( const Mat4x4 lhs )
     {
         auto& rhs = *this;
         set( Vec4f( lhs[0][0] * rhs[0][0] + lhs[0][1] * rhs[1][0] + lhs[0][2] * rhs[2][0] + lhs[0][3] * rhs[3][0],
@@ -139,7 +138,7 @@ public:
                 m[0][1] * p[0] + m[1][1] * p[1] + m[2][1] * p[2] + m[3][1],
                 m[0][2] * p[0] + m[1][2] * p[1] + m[2][2] * p[2] + m[3][2]
             );
-    }
+    }    
 
     float det()
     {
@@ -172,6 +171,7 @@ public:
     {
         Mat4x4 res( 1.0f );
         res[3] = translation;
+        return res;
     }
 
     static Mat4x4 scaleMatrix( const Vec3f& scale )
@@ -180,6 +180,7 @@ public:
         res[0][0] = scale[0];
         res[1][1] = scale[1];
         res[2][2] = scale[2];
+        return res;
     }
 
 private:
