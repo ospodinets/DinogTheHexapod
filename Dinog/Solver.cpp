@@ -4,7 +4,7 @@
 
 namespace
 {
-    const float MAX_ABS_ELEVATION = 65.0f;
+    const float MAX_ABS_ELEVATION = 40.0f;
     const float MAX_ABS_LOCOMOTION = 60.0f;
 
     float evaluateElevation( const Vec3f& offset, const Vec3f& N, float baseH )
@@ -15,45 +15,47 @@ namespace
 
 Solver::Solver()
 {
+    // tangent vectors for each leg
     for( int i = 0; i < NUM_LEGS; ++i )
     {
-        m_Rs[i] = getLegConfig( i ).offset;
-        m_Rs[i].normalize();
+        auto R = getLegConfig( i ).offset;
+        R.normalize();
+        m_tangents[i] = R.cross( - Vec3f::Z() );
     }
 }
 
 void Solver::setControl( const Control & control )
 {
-    m_T = control.torque;
-    m_H = control.height;
+    m_torque = control.torque;
+    m_elevation = control.elevation;  
+    m_direction.set( -control.forward,
+                     -control.right, 0.0f );    
+}
 
-    //auto len = control.dir.length2();
-    //if( fabs( len ) >= F_TOLERANCE )
-    if( fabs( control.thr ) >= F_TOLERANCE )
-    {
-        //m_V = -control.dir * MAX_ABS_LOCOMOTION;
-        m_V.set( MAX_ABS_LOCOMOTION, 0.0f, 0.0f );
-    }
-    else
-    {
-        m_V.set( 0.0f, 0.0f, 0.0f );
-    }
+float Solver::getVelocity() const
+{
+    return max( fabs(m_direction[0]), max( fabs(m_direction[1]), fabs(m_torque) ) );
 }
 
 void Solver::evaluate( int legIndex, Vec3f& locomotionVector, float& elevation )
 {
     const auto& lc = getLegConfig( legIndex );
 
-    if( fabs( m_T ) >= F_TOLERANCE )
-    {        
-        auto Vt = m_Rs[legIndex].cross( Vec3f( 0, 0, -1 ) );
-        Vt *= 2 * m_T * MAX_ABS_LOCOMOTION;
-        locomotionVector = m_V + Vt;
+    if( fabs( m_torque ) >= F_TOLERANCE )
+    {  
+        auto Vt = m_tangents[legIndex] * m_torque * MAX_ABS_LOCOMOTION;
+        locomotionVector = m_direction * MAX_ABS_LOCOMOTION + Vt;
     }
     else
     {
-        locomotionVector = m_V;
+        locomotionVector = m_direction * MAX_ABS_LOCOMOTION;
     }
 
-    elevation = evaluateElevation( lc.offset, Vec3f( 0, 0, 1 ), m_H * MAX_ABS_ELEVATION );
+    if( locomotionVector.length2() > MAX_ABS_LOCOMOTION * MAX_ABS_LOCOMOTION )
+    {
+        locomotionVector.normalize();
+        locomotionVector *= MAX_ABS_LOCOMOTION;
+    }
+
+    elevation = evaluateElevation( lc.offset, Vec3f::Z(), m_elevation * MAX_ABS_ELEVATION );
 }

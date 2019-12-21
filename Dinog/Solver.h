@@ -11,12 +11,12 @@ public:
     Solver();
 
     void setControl( const Control& control );
+    float getVelocity() const;
     void evaluate( int legIndex, Vec3f& locomotionVector, float& elevation );
 
 private:
-    Vec3f m_V;
-    float m_T;
-    float m_H;
-
-    Vec3f m_Rs[NUM_LEGS] {};
+    Vec3f m_direction;
+    float m_torque;
+    float m_elevation;
+    Vec3f m_tangents[NUM_LEGS] {};
 };

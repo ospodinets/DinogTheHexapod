@@ -36,7 +36,9 @@ namespace
 
         SwitchingGait( float stanceSlope )
             : m_stanceSlope { stanceSlope }
-        {            
+        {
+            if ( fabs(m_stanceSlope) > F_TOLERANCE )
+                m_speedMultiplier = 1 / m_stanceSlope;
         }
 
         SwitchingGait* input( float velocity, float t )

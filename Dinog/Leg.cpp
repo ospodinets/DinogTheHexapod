@@ -9,7 +9,7 @@ namespace
 
     Vec3f CENTER { LegConfig::L1 + LegConfig::L2,
                    0,
-                   - LegConfig::L3 };
+                   - LegConfig::L3 + 10 };
 
     bool transaction = false;
 

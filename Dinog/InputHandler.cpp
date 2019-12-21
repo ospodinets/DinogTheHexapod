@@ -5,17 +5,22 @@
 
 namespace
 {
+    float trimZero( const float& val )
+    {
+        if( fabs( val ) < 0.01 )
+            return 0.0f;
+        return val;
+    }
+
     Control parseControl( const Controller::State& state )
     {
         Control ctrl;
 
-        ctrl.thr = state.args[0];        
-        ctrl.torque = state.args[1];
-        if( fabs( ctrl.torque ) < 0.05 )
-            ctrl.torque = 0.0f;
-        ctrl.dir.set( - state.args[3], - state.args[2], 1.0f );
+        ctrl.elevation = trimZero( state.args[0] );
+        ctrl.torque = trimZero( state.args[1] );
+        ctrl.forward = trimZero( - state.args[3] );
+        ctrl.right = trimZero( - state.args[2] );
 
-        ctrl.height = state.args[4];
         return ctrl;
     }
 }

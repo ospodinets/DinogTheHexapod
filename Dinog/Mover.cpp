@@ -2,12 +2,10 @@
 #include "Arduino.h"
 #include "Gait.h"
 
-#define UPD_SPEED 1
 namespace
 {
     const float SPEED_MULTIPLIER = 5.0f;
 }
-
 
 Mover::Mover()
 {    
@@ -36,25 +34,18 @@ void Mover::update( float dt )
 {
     if( m_locomotionEnabled )
     {
-        auto velocity = max( m_control.thr, 2.0 * fabs(m_control.torque) );
-        //auto velocity = m_control.thr;
+        auto velocity = m_solver.getVelocity();
 
-#if UPD_SPEED
-        // add multiplier to control gait speed
-        auto timeshift = SPEED_MULTIPLIER * velocity;
-        if( timeshift < 0.5f )
-            timeshift = 0.5f;
-        m_time += timeshift * dt;
-#else
-        m_time += dt / 2;
-#endif
         auto gait = Gait::query( velocity, m_time );
+
+        float timeGradient = gait->getSpeedMultiplier() * SPEED_MULTIPLIER * velocity * dt;
+        m_time += timeGradient;
+
         Vec3f locomotionVector {};
         float elevation {};
 
         // for each leg in the array
         for( int i = 0; i < NUM_LEGS; ++i )
-        //for( int i = 0; i < 1; ++i )
         {
             m_solver.evaluate( i, locomotionVector, elevation );
             m_legs[i].setInput( locomotionVector, elevation );

@@ -154,11 +154,11 @@ void Controller::update( float dt )
     {
         m_state.event = State::Event::Control;
 
-        m_state.args[0] = map_f( m_curr[0], s_minUntrimmed, s_maxUntrimmed, 0.0f, 1.0f, n_tol );
-        m_state.args[1] = map_f( m_curr[1], s_minUntrimmed, s_maxUntrimmed, 0.0f, 1.0f, n_tol ) - 0.5f;
-        m_state.args[2] = map_f( m_curr[2], s_minUntrimmed, s_maxUntrimmed, 0.0f, 1.0f, n_tol ) - 0.5f;
-        m_state.args[3] = map_f( m_curr[3], s_minUntrimmed, s_maxUntrimmed, 0.0f, 1.0f, n_tol ) - 0.5f;
-        m_state.args[4] = map_f( m_curr[4], s_minUntrimmed, s_maxUntrimmed, 0.0f, 1.0f, n_tol ) - 0.5f;
+        m_state.args[0] = map_f( m_curr[0], s_minUntrimmed, s_maxUntrimmed, -1.0f, 1.0f, n_tol );
+        m_state.args[1] = map_f( m_curr[1], s_minUntrimmed, s_maxUntrimmed, -1.0f, 1.0f, n_tol );
+        m_state.args[2] = map_f( m_curr[2], s_minUntrimmed, s_maxUntrimmed, -1.0f, 1.0f, n_tol );
+        m_state.args[3] = map_f( m_curr[3], s_minUntrimmed, s_maxUntrimmed, -1.0f, 1.0f, n_tol );
+        m_state.args[4] = map_f( m_curr[4], s_minUntrimmed, s_maxUntrimmed, -1.0f, 1.0f, n_tol );
     }
 
 }

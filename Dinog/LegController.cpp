@@ -80,20 +80,12 @@ void LegController::init( const LegConfig& legConfig )
 
 void LegController::setInput( const Vec3f& locomotionVector, float elevation )
 {
-    auto VlocLen2 = locomotionVector.length2();
-    if( fabs( VlocLen2 ) < F_TOLERANCE )
-    {
-        m_pT0 = m_pT1 = m_leg.getCenter();
-    }
-    else
-    {
-        auto Vloc = m_rot.mult( locomotionVector );
-        auto Pc = m_leg.getCenter();
-        Pc[2] -= elevation; 
-        auto VlocHalf = Vloc * 0.5;
-        m_pT0 = Pc + VlocHalf;
-        m_pT1 = Pc - VlocHalf;
-    }
+    auto Vloc = m_rot.mult( locomotionVector );
+    auto Pc = m_leg.getCenter();
+    Pc[2] -= elevation; 
+    auto VlocHalf = Vloc * 0.5;
+    m_pT0 = Pc + VlocHalf;
+    m_pT1 = Pc - VlocHalf;   
 }
 
 void LegController::evaluate( float phaze )

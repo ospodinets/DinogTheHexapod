@@ -8,11 +8,11 @@ static const float F_TOLERANCE = 1e-03;
 static const int NUM_LEGS = 6;
 
 struct Control
-{    
-    Vec3f dir { 0.0f, 0.0f, 0.0f };
+{   
+    float elevation { 0.0f };
     float torque { 0.0f };
-    float thr { 0.0f };
-    float height { 0.0f };
+    float forward { 0.0f };
+    float right { 0.0f };
 };
 
 

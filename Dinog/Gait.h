@@ -11,6 +11,10 @@ public:
     // phase < 0 - swing 
     // phase > 0 - stance
     float evaluate( int legIndex, float t ) const;
+    float getSpeedMultiplier() const
+    {
+        return m_speedMultiplier;
+    }
 
     // Gait state machine
     static const Gait* const query( float velocity, float t );   
@@ -24,4 +28,5 @@ private:
 protected:
     float m_period { 1.0f };
     float m_offsets[NUM_LEGS] {};
+    float m_speedMultiplier {1.0f};
 };
