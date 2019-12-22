@@ -7,7 +7,7 @@ namespace
 {
     float trimZero( const float& val )
     {
-        if( fabs( val ) < 0.01 )
+        if( fabs( val ) <= 0.02 )
             return 0.0f;
         return val;
     }

@@ -5,6 +5,8 @@
 class Controller
 {
 public:
+    static const int NUM_CHANNELS = 16;   
+
     struct State
     {
         enum class Event
@@ -36,6 +38,9 @@ public:
     void update( float dt );
     void exitMenu();
 
+    void enterCalibration();
+    void exitCalibration();
+
 private:  
     void swap();
 
@@ -47,8 +52,8 @@ private:
 
     SBUS m_receiver;
     State m_state;
-    uint16_t m_buff1[16];
-    uint16_t m_buff2[16];
+    uint16_t m_buff1[NUM_CHANNELS];
+    uint16_t m_buff2[NUM_CHANNELS];
     uint16_t* m_tmp;
     uint16_t* m_curr;
 
@@ -57,5 +62,10 @@ private:
     
     BoolChannelState m_boolChannels[4];
 
-    
+    struct ChannelLimit
+    {
+        int minV;
+        int maxV;
+    } m_limits[NUM_CHANNELS];
+    bool m_calibration {};
 };

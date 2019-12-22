@@ -38,6 +38,9 @@ LegConfig& getLegConfig( int index );
 void loadConfig();
 void saveConfig();
 
+void loadChannelLimits( int* limits );
+void saveChannelLimits( int* limits );
+
 void startLegTransaction();
 void commitLegTransaction( int milliseconds );
 

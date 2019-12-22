@@ -16,7 +16,7 @@ public:
         virtual void exitMenu() = 0;
     };
 
-    ServiceMenu( const Controller& controller, Observer* observer );
+    ServiceMenu( Controller& controller, Observer* observer );
     ~ServiceMenu();
 
     void init();
@@ -24,11 +24,13 @@ public:
 
 private:
     class State;
+    class SelectState;
     class SetLegState;
     class SetJointState;
     class EvaluateState;
+    class CalibrateChannelsState;
 
-    const Controller& m_controller;
+    Controller& m_controller;
     Observer* m_observer;
     State** m_states;
     State* m_currentState;

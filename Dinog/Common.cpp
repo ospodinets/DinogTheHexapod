@@ -1,7 +1,14 @@
 #include "Common.h"
 #include "Leg.h"
 #include "Arduino.h"
+#include "Controller.h"
 #include <EEPROM.h>
+
+namespace
+{
+    int s_EEPROMtrims = 0;
+    int s_EEPROMLimits = 20;
+}
 
 LegConfig& getLegConfig( int index )
 {
@@ -48,7 +55,7 @@ void saveConfig()
 #ifdef DEBUG_TRACE
     Serial.println( "Saving Trims: " );
 #endif
-    int addr = 0;
+    int addr = s_EEPROMtrims;
     for( int i = 0; i < NUM_LEGS; i++ )
     {
         auto& cfg = getLegConfig( i );
@@ -65,6 +72,61 @@ void saveConfig()
         Serial.print( cfg.femurTrim );
         Serial.print( " " );
         Serial.println( cfg.tibiaTrim );
+#endif
+    }
+}
+
+void loadChannelLimits( int * limits )
+{
+#ifdef DEBUG_TRACE
+    Serial.println( "Load Limits: " );
+#endif
+    int addr = s_EEPROMLimits;    
+    for( int i = 0; i < Controller::NUM_CHANNELS; i++ )
+    {
+        int min {};
+        EEPROM.get( addr, min );
+        addr += sizeof( min );
+        int max {};
+        EEPROM.get( addr, max );
+        addr += sizeof( max );
+
+        ( *limits++ ) = min;
+        ( *limits++ ) = max;
+        
+#ifdef DEBUG_TRACE
+        Serial.print( "Channel: " );
+        Serial.print( i );
+        Serial.print( " " );
+        Serial.print( min );
+        Serial.print( " " );
+        Serial.println( max );
+#endif
+    }
+}
+
+void saveChannelLimits( int * limits )
+{
+#ifdef DEBUG_TRACE
+    Serial.println( "Save Limits: " );
+#endif
+    int addr = s_EEPROMLimits;
+    for( int i = 0; i < Controller::NUM_CHANNELS; i++ )
+    {
+        auto min = ( *limits++ );
+        auto max = ( *limits++ );
+        EEPROM.put( addr, min );
+        addr += sizeof( min );
+        EEPROM.put( addr, max );
+        addr += sizeof( max );
+
+#ifdef DEBUG_TRACE
+        Serial.print( "Channel: " );
+        Serial.print( i );
+        Serial.print( " " );
+        Serial.print( min );
+        Serial.print( " " );
+        Serial.println( max );
 #endif
     }
 }
