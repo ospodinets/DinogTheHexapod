@@ -2,8 +2,6 @@
 #include "Arduino.h"
 #include "Gait.h"
 
-#define CONST_SPEED 1
-
 namespace
 {
     const float SPEED_MULTIPLIER = 5.0f;
@@ -38,14 +36,8 @@ void Mover::update( float dt )
     {
         auto velocity = m_solver.getVelocity();
         auto gait = Gait::query( velocity, m_time );
-
-        float timeGradient =
-#if CONST_SPEED
-            dt;
-#else
-            gait->getSpeedMultiplier() * SPEED_MULTIPLIER * velocity * dt;
-#endif
-        m_time += timeGradient;
+                
+        m_time += gait->getSpeedMultiplier() * SPEED_MULTIPLIER * velocity * dt;
 
         Vec3f locomotionVector {};
         float elevation {};

@@ -4,13 +4,12 @@
 
 #include <LineSegment.h>
 
+#define USE_GAIT_MIXER 1
+
 namespace
 {
     using Segment = LineSegment<float>;
     using Curve = Polyline<float, 3>;
-
-    const float mixerPeriod = 1.0f;
-    const float mixerIdlePeriod = 0.2f;
 
     const float waveGaitOnAsc = F_TOLERANCE;
     const float waveGaitOnDesc = 0.2f;
@@ -21,6 +20,9 @@ namespace
     const float tripodGaitOnAsc = 0.95f;
     const float tripodGaitOnDesc = 1.0f;
 
+    // Do not allow switching gait frequently
+    const float minGaitUptime = 2.0f;
+
     class SwitchingGait : public Gait
     {
     public:
@@ -30,19 +32,27 @@ namespace
             Wave, 
             Ripple, 
             Tripod,
+            Mixer,
 
             Total
         };
 
-        SwitchingGait( float stanceSlope )
-            : m_stanceSlope { stanceSlope }
+        SwitchingGait( Type type, float stanceSlope )
+            : m_type { type }
+            , m_stanceSlope { stanceSlope }
         {
             if ( fabs(m_stanceSlope) > F_TOLERANCE )
                 m_speedMultiplier = 1 / m_stanceSlope;
         }
 
+        Type type() const
+        {
+            return m_type;
+        }
+
         SwitchingGait* input( float velocity, float t )
         {
+            m_uptime = t - m_t;
             return onInput( velocity, t );
         }
 
@@ -60,12 +70,28 @@ namespace
             return modf( (t + m_offsets[leg]) / m_period, &intP ) * m_period;
         }
 
+        void start( float t )
+        {
+            m_t = t;
+            m_uptime = 0.0f;
+        }
+
+        float uptime() const
+        {
+            return m_uptime;
+        }
+
     private:
         virtual SwitchingGait* onInput( float velocity, float t ) = 0;
 
         float m_stanceSlope {};
+        Type m_type;
+
+        float m_t {};
+        float m_uptime {};
     };
 
+#if USE_GAIT_MIXER
     class GaitMixer : public SwitchingGait
     {
     public:
@@ -76,17 +102,17 @@ namespace
             return "Gait mixer";
         }
 #endif 
-        void setup( SwitchingGait* from, SwitchingGait* to, float t, float period = mixerPeriod );
+        void setup( SwitchingGait* from, SwitchingGait* to, float t, float period = minGaitUptime );
 
     private:
         float onEval( int legIndex, float t ) const override;
         SwitchingGait* onInput( float velocity, float t ) override;
 
-        float m_t {};
         Curve m_curves[NUM_LEGS];
         SwitchingGait* m_to {};
     };
-
+#endif
+    
     class IdleGait : public SwitchingGait
     {
     public:
@@ -94,10 +120,13 @@ namespace
 #ifdef DEBUG_TRACE
         const char* name() const override { return "Idle"; }
 #endif 
+        void setup( SwitchingGait* prev, float t );
 
     private:
         float onEval( int legIndex, float t ) const override;
         SwitchingGait* onInput( float velocity, float t ) override;
+
+        float m_phazes[NUM_LEGS] {};
     };
 
     class WaveGait : public SwitchingGait
@@ -147,43 +176,57 @@ namespace
         if( !s_gaits )
         {
             s_gaits = new SwitchingGait*[SwitchingGait::Total];
-            s_gaits[SwitchingGait::Idle] = new IdleGait;
+            s_gaits[SwitchingGait::Idle] = nullptr;
             s_gaits[SwitchingGait::Wave] = new WaveGait;
             s_gaits[SwitchingGait::Ripple] = new RippleGait;
             s_gaits[SwitchingGait::Tripod] = new TripodGait;
+            s_gaits[SwitchingGait::Mixer] = nullptr;
         }
         return s_gaits[type];
     }
 
-    SwitchingGait* mix( SwitchingGait* from, SwitchingGait* to, float t, float T )
+    SwitchingGait* idle( SwitchingGait* prev, float t )
     {
+        static IdleGait s_idle;
+        s_idle.setup( prev, t );
+        return &s_idle;
+    }
+
+    SwitchingGait* mix( SwitchingGait* from, SwitchingGait* to, float t )
+    {
+#if USE_GAIT_MIXER
 #ifdef DEBUG_TRACE
         Serial.print( "Mixing " );
         Serial.print( from->name() );
         Serial.print( " with " );
-        Serial.println( to->name() );
+        Serial.println( to ? to->name() : "Idle");
 
 #endif // DEBUG_TRACE
 
-        // static GaitMixer s_mixer;
-        // s_mixer.setup( from, to, t, T );
-        // return &s_mixer;
+        if( to )
+        {
+            static GaitMixer s_mixer;
+            s_mixer.setup( from, to, t, minGaitUptime );
+            return &s_mixer;            
+        }
+        
+        return idle( from, t );
+#else
+        return to ? to : idle( from, t );
+#endif
+    }    
 
-        return to;
-    }
-
-
-    SwitchingGait* s_currentGait = gait( SwitchingGait::Idle );
+    SwitchingGait* s_currentGait = idle( nullptr, 0.0 );
 }
 
+#if USE_GAIT_MIXER
 GaitMixer::GaitMixer()
-    : SwitchingGait( 0.0f )
+    : SwitchingGait( Type::Mixer, 0.0f )
 {
 }
 
 void GaitMixer::setup( SwitchingGait* from, SwitchingGait* to, float t, float period )
 {
-    m_t = t;
     m_to = to;
     m_period = period;    
 
@@ -333,39 +376,56 @@ float GaitMixer::onEval( int legIndex, float t ) const
 
 SwitchingGait* GaitMixer::onInput( float velocity, float t )
 {
-    if( t > m_t + m_period )
+    if( uptime() > m_period )
         return m_to;
 
     return this;
 }
 
+#endif
+
 IdleGait::IdleGait()
-    : SwitchingGait( 0.0f )
+    : SwitchingGait( Type::Idle, 0.0f )
 {
+}
+
+void IdleGait::setup( SwitchingGait* prev, float t )
+{
+    for( int i = 0; i < NUM_LEGS; ++i )
+    {
+        float ph = 0.5f;
+        if( prev )
+        {
+            ph = prev->evaluate( i, t );
+            if( ph < 0 )
+                ph = 1 - ph;
+        }
+        m_phazes[i] = ph;
+    }
 }
 
 float IdleGait::onEval( int legIndex, float t ) const
 {
-    return 0.5f;
+    return m_phazes[legIndex];
 }
 
 SwitchingGait* IdleGait::onInput( float velocity, float t )
 {
     if( velocity > tripodGaitOnAsc )
-        return mix( this, gait( SwitchingGait::Tripod ), t, mixerPeriod );
+        return mix( this, gait( SwitchingGait::Tripod ), t );
 
     if( velocity > rippleGaitOnAsc )
-        return mix( this, gait( SwitchingGait::Ripple ), t, mixerPeriod );
+        return mix( this, gait( SwitchingGait::Ripple ), t );
 
     if( velocity > waveGaitOnAsc )
-        return mix( this, gait( SwitchingGait::Wave ), t, mixerPeriod );
+        return mix( this, gait( SwitchingGait::Wave ), t );
 
     return this;
 }
 
 
 WaveGait::WaveGait()
-    : SwitchingGait( 0.2f )
+    : SwitchingGait( Type::Wave, 0.2f )
 {
     m_period = 6.0;
     m_offsets[0] = 0.0f;
@@ -384,20 +444,23 @@ float WaveGait::onEval( int legIndex, float t ) const
 
 SwitchingGait* WaveGait::onInput( float velocity, float t )
 {
-    if( velocity > tripodGaitOnAsc )
-        return mix( this, gait( SwitchingGait::Tripod ), t, mixerPeriod );
+    if( uptime() > minGaitUptime )
+    {
+        if( velocity > tripodGaitOnAsc )
+            return mix( this, gait( SwitchingGait::Tripod ), t );
 
-    if( velocity > rippleGaitOnAsc )
-        return mix( this, gait( SwitchingGait::Ripple ), t, mixerPeriod );
+        if( velocity > rippleGaitOnAsc )
+            return mix( this, gait( SwitchingGait::Ripple ), t );
+    }
 
     if( velocity <= F_TOLERANCE )
-        return mix( this, gait( SwitchingGait::Idle ), t, mixerIdlePeriod );
+        return mix( this, nullptr, t );
 
     return this;
 }
 
 RippleGait::RippleGait()
-    : SwitchingGait( 0.25f )
+    : SwitchingGait( Type::Ripple, 0.25f )
 {
     m_period = 6.0f;
     m_offsets[0] = 0.0f;
@@ -416,20 +479,23 @@ float RippleGait::onEval( int legIndex, float t ) const
 
 SwitchingGait* RippleGait::onInput( float velocity, float t )
 {
-    if( velocity > tripodGaitOnAsc )
-        return mix( this, gait( SwitchingGait::Tripod ), t, mixerPeriod );
+    if( uptime() > minGaitUptime )
+    {
+        if( velocity > tripodGaitOnAsc )
+            return mix( this, gait( SwitchingGait::Tripod ), t );
 
-    if( velocity < waveGaitOnDesc )
-        return mix( this, gait( SwitchingGait::Wave ), t, mixerPeriod );
+        if( velocity < waveGaitOnDesc )
+            return mix( this, gait( SwitchingGait::Wave ), t );
+    }
 
     if( velocity <= F_TOLERANCE )
-        return mix( this, gait( SwitchingGait::Idle ), t, mixerIdlePeriod );
+        return mix( this, nullptr, t );
 
     return this;
 }
 
 TripodGait::TripodGait()
-    : SwitchingGait( 1.0f )
+    : SwitchingGait( Type::Tripod, 1.0f )
 {
     m_period = 2.0f;
     m_offsets[0] = 0.0f;
@@ -448,14 +514,17 @@ float TripodGait::onEval( int legIndex, float t ) const
 
 SwitchingGait* TripodGait::onInput( float velocity, float t )
 {
-    if( velocity < rippleGaitOnDesc )
-        return mix( this, gait( SwitchingGait::Ripple ), t, mixerPeriod );
+    if( uptime() > minGaitUptime )
+    {
+        if( velocity < rippleGaitOnDesc )
+            return mix( this, gait( SwitchingGait::Ripple ), t );
 
-    if( velocity < waveGaitOnDesc )
-        return mix( this, gait( SwitchingGait::Wave ), t, mixerPeriod );
+        if( velocity < waveGaitOnDesc )
+            return mix( this, gait( SwitchingGait::Wave ), t );
+    }
 
     if( velocity <= F_TOLERANCE )
-        return mix( this, gait( SwitchingGait::Idle ), t, mixerIdlePeriod );
+        return mix( this, nullptr, t );
 
     return this;
 }
