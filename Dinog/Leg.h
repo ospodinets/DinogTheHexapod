@@ -15,13 +15,7 @@ public:
 
     void setPos( const Vec3f& value, bool force = false );
     const Vec3f& getPos() const;
-    const Vec3f& getCenter();
-
-    void center();
-
-    // all setPos calls will be applied once commitTransaction is called
-    static void startTransaction();
-    static void commitTransaction( int msTransactionTime );
+    const Vec3f& getCenter();    
 
 private:
     ServoEx m_coxa;

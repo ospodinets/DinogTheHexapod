@@ -16,7 +16,7 @@ namespace
     const int s_minUntrimmed = 180;
     const int s_maxUntrimmed = 1800; 
 
-    int n_tol = 20;
+    int n_tol = 10;
 
     const float s_delay = 0.05f;
 }

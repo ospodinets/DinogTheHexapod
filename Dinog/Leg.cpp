@@ -81,18 +81,3 @@ const Vec3f & Leg::getCenter()
 {
     return CENTER;
 }
-
-void Leg::center()
-{
-    setPos( CENTER );
-}
-
-void Leg::startTransaction()
-{
-    ServoGroupMove.start();
-}
-
-void Leg::commitTransaction( int msTransactionTime )
-{
-    ServoGroupMove.commit( msTransactionTime );
-}

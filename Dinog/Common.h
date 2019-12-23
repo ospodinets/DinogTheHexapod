@@ -40,7 +40,3 @@ void saveConfig();
 
 void loadChannelLimits( int* limits );
 void saveChannelLimits( int* limits );
-
-void startLegTransaction();
-void commitLegTransaction( int milliseconds );
-

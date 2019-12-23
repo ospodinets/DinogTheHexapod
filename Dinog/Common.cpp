@@ -130,13 +130,3 @@ void saveChannelLimits( int * limits )
 #endif
     }
 }
-
-void startLegTransaction()
-{
-    Leg::startTransaction();
-}
-
-void commitLegTransaction( int milliseconds )
-{
-    Leg::commitTransaction( milliseconds );
-}
