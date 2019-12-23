@@ -5,15 +5,13 @@
 #include <Vec3f.h>
 #include <Mat3x3.h>
 
-struct LegConfig;
-
 class LegController
 {
 public:
     LegController();
     ~LegController();
 
-    void init( const LegConfig& legConfig );
+    void init( const Leg::Config& legConfig );
 
     void setInput( const Vec3f& locomotionVector, float elevation );
     void evaluate( float phaze );

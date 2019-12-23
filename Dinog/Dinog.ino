@@ -2,6 +2,8 @@
 #include "Controller.h"
 #include "InputHandler.h"
 
+#include <MathUtils.h>
+
 namespace
 {
     class InputObserver : public InputHandler::Observer
@@ -38,7 +40,7 @@ InputHandler input { controller, &inputObserver };
 
 int legTrimming {};
 int jointTrimming {};
-LegConfig untouched;
+Leg::Config untouched;
 bool changed {};
 float prev_x {}, prev_y {};
 
@@ -61,7 +63,7 @@ void InputObserver::enterEvaluation( int leg, int joint )
 {
     legTrimming = leg;
     jointTrimming = joint;
-    untouched = getLegConfig( leg );
+    untouched = Leg::getConfig( leg );
 
     if( jointTrimming >=0 )
         Serial.print( "Current trim is: " );
@@ -93,7 +95,7 @@ void InputObserver::evaluate( float x, float y )
     prev_x = x;
     prev_y = y;
 
-    auto& config = getLegConfig( legTrimming );
+    auto& config = Leg::getConfig( legTrimming );
 
     if( jointTrimming < 0 )
     {
@@ -125,7 +127,7 @@ void InputObserver::exitEvaluation( bool save )
 {
     if( save )
     {
-        untouched = getLegConfig( legTrimming );
+        untouched = Leg::getConfig( legTrimming );
         changed = true;
     }
     mover.centerLeg( legTrimming );
@@ -134,7 +136,7 @@ void InputObserver::exitMenu()
 {
     if( changed )
     {
-        saveConfig();
+        Leg::saveConfig();
     }
     mover.enableLocomotion( true );
 }
@@ -142,9 +144,12 @@ void InputObserver::exitMenu()
 // The setup() function runs once each time the micro-controller starts
 void setup()
 {
+#ifdef DEBUG_TRACE
     Serial.begin( 9600 );
     Serial.println( "Dinog, The Hexapod Setup" );
-    loadConfig();
+#endif
+
+    Leg::loadConfig();
     lastFrame = millis();
     controller.init();
     mover.init();

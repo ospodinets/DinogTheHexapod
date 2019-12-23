@@ -1,10 +1,12 @@
 #include "Controller.h"
-#include "Common.h"
 
+#include <EEPROM.h>
 #include <MathUtils.h>
 
 namespace
 {
+    static const int EEPROM_limitsOffset = 20;
+
     const int s_MenuTriggerChannelId = 3;
     const int s_NextChannelId = 1;
     const int s_PrevChannelId = 1;
@@ -20,6 +22,7 @@ namespace
 
     const float s_delay = 0.05f;
 }
+
 
 
 Controller::Controller()
@@ -45,7 +48,7 @@ void Controller::init()
     Serial.println( "Initialize controller" );
 #endif
 
-    loadChannelLimits( ( int* ) m_limits );
+    loadChannelLimits();
 
     m_receiver.begin();
 }
@@ -195,7 +198,7 @@ void Controller::enterCalibration()
 void Controller::exitCalibration()
 {
     m_calibration = false;
-    saveChannelLimits( ( int* ) m_limits );
+    saveChannelLimits();
 }
 
 void Controller::swap()
@@ -205,4 +208,54 @@ void Controller::swap()
     m_curr = tmp;
 }
 
+
+void Controller::loadChannelLimits()
+{
+#ifdef DEBUG_TRACE
+    Serial.println( "Load Limits: " );
+#endif
+    int addr = EEPROM_limitsOffset;
+    for( int i = 0; i < NUM_CHANNELS; i++ )
+    {
+        auto& limit = m_limits[i];
+        EEPROM.get( addr, limit.minV );
+        addr += sizeof( limit.minV );
+        EEPROM.get( addr, limit.maxV );
+        addr += sizeof( limit.maxV );        
+
+#ifdef DEBUG_TRACE
+        Serial.print( "Channel: " );
+        Serial.print( i );
+        Serial.print( " " );
+        Serial.print( limit.minV );
+        Serial.print( " " );
+        Serial.println( limit.maxV );
+#endif
+    }
+}
+
+void Controller::saveChannelLimits()
+{
+#ifdef DEBUG_TRACE
+    Serial.println( "Save Limits: " );
+#endif
+    int addr = EEPROM_limitsOffset;
+    for( int i = 0; i < NUM_CHANNELS; i++ )
+    {
+        auto& limit = m_limits[i];
+        EEPROM.put( addr, limit.minV );
+        addr += sizeof( limit.minV );
+        EEPROM.put( addr, limit.maxV );
+        addr += sizeof( limit.maxV );
+
+#ifdef DEBUG_TRACE
+        Serial.print( "Channel: " );
+        Serial.print( i );
+        Serial.print( " " );
+        Serial.print( limit.minV );
+        Serial.print( " " );
+        Serial.println( limit.maxV );
+#endif
+    }
+}
 

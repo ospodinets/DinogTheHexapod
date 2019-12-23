@@ -3,8 +3,6 @@
 #include "Common.h"
 #include <Vec3f.h>
 
-struct Control;
-
 class Solver
 {
 public:

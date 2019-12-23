@@ -1,12 +1,12 @@
 #include "LegController.h"
 #include "Common.h"
-#include "Arduino.h"
 
+#include <Arduino.h>
 #include <MathUtils.h>
 
 namespace
 {
-
+#ifdef DEBUG_TRACE
     void printM( const Mat4x4& mat )
     {
         for( int i = 0; i < 4; ++i )
@@ -33,6 +33,7 @@ namespace
         }
         Serial.println( "]" );
     }
+#endif
 
     static const float S_Z_SWING_ELEVATION = 40.0f;
     static const float SMOOTH_FACTOR = 4;
@@ -59,8 +60,8 @@ namespace
 LegController::LegController()
     : m_p0 { }
     , m_p1 { }
-    , m_p {}
-    , m_pTmp {}
+    , m_p { }
+    , m_pTmp { }
     , m_rot { 1.0f }
 {}
 
@@ -68,7 +69,7 @@ LegController::~LegController()
 {
 }
 
-void LegController::init( const LegConfig& legConfig )
+void LegController::init( const Leg::Config& legConfig )
 {   
     m_rot = legConfig.rotation.toMatrix3x3();
     m_rot.inverse();

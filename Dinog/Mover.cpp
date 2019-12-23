@@ -1,6 +1,7 @@
 #include "Mover.h"
-#include "Arduino.h"
 #include "Gait.h"
+
+#include <Arduino.h>
 
 namespace
 {
@@ -13,11 +14,12 @@ Mover::Mover()
 
 void Mover::init()
 {
-    // initial setup
+#ifdef DEBUG_TRACE
     Serial.println( "Initialize Mover" );
+#endif
     for( int i = 0; i < NUM_LEGS; ++i )
     {
-        m_legs[i].init( getLegConfig( i ) );
+        m_legs[i].init( Leg::getConfig( i ) );
     }
 }
 

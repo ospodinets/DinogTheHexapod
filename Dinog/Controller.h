@@ -27,7 +27,7 @@ public:
     };
 
     Controller();
-    ~Controller();    
+    ~Controller();     
 
     const State& getState() const
     {
@@ -43,6 +43,8 @@ public:
 
 private:  
     void swap();
+    void loadChannelLimits();
+    void saveChannelLimits();
 
     struct BoolChannelState
     {

@@ -1,6 +1,8 @@
 #include "Solver.h"
-#include "Common.h"
-#include "Arduino.h"
+#include "Leg.h"
+
+#include <Arduino.h>
+#include <MathUtils.h>
 
 namespace
 {
@@ -18,7 +20,7 @@ Solver::Solver()
     // tangent vectors for each leg
     for( int i = 0; i < NUM_LEGS; ++i )
     {
-        auto R = getLegConfig( i ).offset;
+        auto R = Leg::getConfig( i ).offset;
         R.normalize();
         m_tangents[i] = R.cross( - Vec3f::Z() );
     }
@@ -39,7 +41,7 @@ float Solver::getVelocity() const
 
 void Solver::evaluate( int legIndex, Vec3f& locomotionVector, float& elevation )
 {
-    const auto& lc = getLegConfig( legIndex );
+    const auto& lc = Leg::getConfig( legIndex );
 
     if( fabs( m_torque ) >= F_TOLERANCE )
     {  
