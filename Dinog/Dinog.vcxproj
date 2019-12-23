@@ -137,7 +137,6 @@
     <ClCompile Include="Leg.cpp" />
     <ClCompile Include="LegController.cpp" />
     <ClCompile Include="Mover.cpp" />
-    <ClCompile Include="Common.cpp" />
     <ClCompile Include="ServiceMenu.cpp" />
     <ClCompile Include="Solver.cpp" />
   </ItemGroup>
