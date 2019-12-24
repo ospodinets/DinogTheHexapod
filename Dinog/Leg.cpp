@@ -111,8 +111,7 @@ void Leg::saveConfig()
 
 Leg::Leg( )
     : m_config( nullptr )
-{  
-    m_position = CENTER;
+{   
 }
 
 Leg::~Leg()
@@ -123,7 +122,7 @@ void Leg::init( const Leg::Config& config )
 {
     m_config = &config;
 
-    setPos( getCenter() );
+    setPos( getCenter(), true );
 
     m_coxa.attach( m_config->coxaPin );
     m_femur.attach( m_config->femurPin );

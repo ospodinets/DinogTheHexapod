@@ -44,14 +44,11 @@ void Mover::update( float dt )
         Vec3f locomotionVector {};
         float elevation {};
 
-        // for each leg in the array
         for( int i = 0; i < NUM_LEGS; ++i )
         {
             m_solver.evaluate( i, locomotionVector, elevation );
-            m_legs[i].setInput( locomotionVector, elevation );
-
-            auto ph = gait->evaluate( i, m_time );
-            m_legs[i].evaluate( ph );
+            auto ph = gait->evaluate( i, m_time );            
+            m_legs[i].setInput( locomotionVector, elevation, ph );
         }
     }
 }

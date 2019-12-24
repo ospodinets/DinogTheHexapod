@@ -35,7 +35,7 @@ namespace
     }
 #endif
 
-    static const float S_Z_SWING_ELEVATION = 40.0f;
+    static const float S_Z_SWING_ELEVATION = 37.0f;
     static const float SMOOTH_FACTOR = 4;
 
     Vec3f evaluateSwing( float phaze, const Vec3f& p0, const Vec3f& p1 )
@@ -53,9 +53,8 @@ namespace
         return Vec3f { lerp( p0[0], p1[0], phaze ),
                       lerp( p0[1], p1[1], phaze ),
                       lerp( p0[2], p1[2], phaze ) };
-    }    
+    }
 }
-
 
 LegController::LegController()
     : m_p0 { }
@@ -74,26 +73,23 @@ void LegController::init( const Leg::Config& legConfig )
     m_rot = legConfig.rotation.toMatrix3x3();
     m_rot.inverse();
 
-    m_pT0 = m_pT1 = m_pTmp = m_p = m_p0 = m_p1 = m_leg.getCenter();
+    m_pTmp = m_p = m_p0 = m_p1 = m_leg.getCenter();
     m_leg.init( legConfig );  
     m_stance = true;
 }
 
-void LegController::setInput( const Vec3f& locomotionVector, float elevation )
+void LegController::setInput( const Vec3f& locomotionVector, float elevation, float phaze )
 {
     auto Vloc = m_rot.mult( locomotionVector );
     auto Pc = m_leg.getCenter();
     Pc[2] -= elevation; 
     auto VlocHalf = Vloc * 0.5;
-    m_pT0 = Pc + VlocHalf;
-    m_pT1 = Pc - VlocHalf;   
-}
+    auto pT0 = Pc + VlocHalf;
+    auto pT1 = Pc - VlocHalf;
 
-void LegController::evaluate( float phaze )
-{ 
     // update end points
-    m_p0 = m_p0 + ( m_pT0 - m_p0 ) / SMOOTH_FACTOR;
-    m_p1 = m_p1 + ( m_pT1 - m_p1 ) / SMOOTH_FACTOR;
+    m_p0 = m_p0 + ( pT0 - m_p0 ) / SMOOTH_FACTOR;
+    m_p1 = m_p1 + ( pT1 - m_p1 ) / SMOOTH_FACTOR;
 
     bool stance = phaze >= 0;
 
@@ -112,10 +108,10 @@ void LegController::evaluate( float phaze )
             m_pTmp = m_p1;
         }
         m_stance = stance;
-    }    
+    }
 
     m_p = stance ? evaluateStance( phaze, m_p0, m_p1 ) :
-        evaluateSwing( phaze, m_p0, m_pTmp );    
+        evaluateSwing( phaze, m_p0, m_pTmp );
     m_leg.setPos( m_p );
 }
 
