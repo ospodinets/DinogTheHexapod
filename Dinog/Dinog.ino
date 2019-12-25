@@ -145,7 +145,7 @@ void InputObserver::exitMenu()
 void setup()
 {
 #ifdef DEBUG_TRACE
-    Serial.begin( 9600 );
+    Serial.begin( 38400 );
     Serial.println( "Dinog, The Hexapod Setup" );
 #endif
 

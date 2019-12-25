@@ -63,19 +63,28 @@ public:
         {
             t = max( t, m_domain[0] );
             t = min( t, m_domain[1] );
-        }            
+        }   
+
+        T res {};
 
         if( m_mode == TwoPoints )
-            return lerp( m_v[0], m_v[1], m_t[0], m_t[1], t );
+        {
+            if( fabs( m_t[0] - m_t[1] ) > F_TOLERANCE )
+                res = lerp( m_v[0], m_v[1], m_t[0], m_t[1], t );
+
+        }            
         else
-            return m_slope * ( t - m_t[0] ) + m_v[0];
+        {
+            res = m_slope * ( t - m_t[0] ) + m_v[0];
+        }   
+        return res;
     }
 
     bool findT( const T& value, float& t )
     {
         if( m_mode == TwoPoints )
         {
-            if( m_v[0] != m_v[1] )
+            if( fabs(m_v[0] - m_v[1]) > F_TOLERANCE )
             {
                 t = lerp( m_t[0], m_t[1], m_v[0], m_v[1], value );
                 return true;
@@ -83,7 +92,7 @@ public:
         }            
         else
         {
-            if( m_slope > F_TOLERANCE )
+            if( fabs(m_slope) > F_TOLERANCE )
             {
                 t = ( value - m_v[0] ) / m_slope + m_t[0];
                 return true;

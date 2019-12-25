@@ -221,7 +221,7 @@ namespace
 
 #if USE_GAIT_MIXER
 GaitMixer::GaitMixer()
-    : SwitchingGait( Type::Mixer, 0.0f )
+    : SwitchingGait( Type::Mixer, 1.0f )
 {
 }
 
@@ -286,7 +286,8 @@ void GaitMixer::setup( SwitchingGait* from, SwitchingGait* to, float t, float pe
 #ifdef DEBUG_TRACE
                     Serial.print( "1." );
 #endif
-                    curve.pushSegment( Segment( ph0 >= 0.0f ? -F_TOLERANCE : ph0, -1.0f, t0, tmid ) );
+                    if( fabs( t0 - tmid) > F_TOLERANCE )
+                        curve.pushSegment( Segment( ph0 >= 0.0f ? -F_TOLERANCE : ph0, -1.0f, t0, tmid ) );
                 }
                 else
                 {
