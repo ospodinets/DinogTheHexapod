@@ -496,7 +496,7 @@ SwitchingGait* RippleGait::onInput( float velocity, float t )
 }
 
 TripodGait::TripodGait()
-    : SwitchingGait( Type::Tripod, 1.0f )
+    : SwitchingGait( Type::Tripod, 0.75f )
 {
     m_period = 2.0f;
     m_offsets[0] = 0.0f;

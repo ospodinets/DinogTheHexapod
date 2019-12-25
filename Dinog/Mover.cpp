@@ -42,7 +42,7 @@ void Mover::update( float dt )
         auto gaitTimeGradient = gait->getSpeedMultiplier() * SPEED_MULTIPLIER * dt;
         auto velTimeGradient = velocity < 0.1 ? 0.1f : velocity;
                 
-        m_time += velTimeGradient * velTimeGradient;
+        m_time += gaitTimeGradient * velTimeGradient;
 
         Vec3f locomotionVector {};
         float elevation {};
