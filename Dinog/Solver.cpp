@@ -6,7 +6,7 @@
 
 namespace
 {
-    const float MAX_ABS_ELEVATION = 40.0f;
+    const float MAX_ABS_ELEVATION = 35.0f;
     const float MAX_ABS_LOCOMOTION = 60.0f;
 
     float evaluateElevation( const Vec3f& offset, const Vec3f& N, float baseH )
@@ -31,7 +31,7 @@ void Solver::setControl( const Control & control )
     m_torque = control.torque;
     m_elevation = control.elevation;  
     m_direction.set( -control.forward,
-                     -control.right, 0.0f );    
+                     -control.right, 0.0f );
 }
 
 float Solver::getVelocity() const

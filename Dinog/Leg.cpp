@@ -15,6 +15,10 @@ namespace
                    0,
                    - Leg::Config::L3 + 10 };
 
+    Vec3f HOME { Leg::Config::L1 + Leg::Config::L2,
+                 0,
+                 -Leg::Config::L3 + 50 };
+
     bool transaction = false;
 
     void evaluate( const Vec3f& pos, const Leg::Config& legConfig, int& coxaValue, int& femurValue, int& tibiaValue )
@@ -122,7 +126,7 @@ void Leg::init( const Leg::Config& config )
 {
     m_config = &config;
 
-    setPos( getCenter(), true );
+    setPos( getHome(), true );
 
     m_coxa.attach( m_config->coxaPin );
     m_femur.attach( m_config->femurPin );
@@ -148,7 +152,12 @@ const Vec3f & Leg::getPos() const
     return m_position;
 }
 
-const Vec3f & Leg::getCenter()
+const Vec3f & Leg::getCenter() const
 {
     return CENTER;
+}
+
+const Vec3f & Leg::getHome() const
+{
+    return HOME;
 }

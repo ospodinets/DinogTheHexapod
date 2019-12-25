@@ -73,7 +73,7 @@ void LegController::init( const Leg::Config& legConfig )
     m_rot = legConfig.rotation.toMatrix3x3();
     m_rot.inverse();
 
-    m_pTmp = m_p = m_p0 = m_p1 = m_leg.getCenter();
+    m_pTmp = m_p = m_p0 = m_p1 = m_leg.getHome();
     m_leg.init( legConfig );  
     m_stance = true;
 }

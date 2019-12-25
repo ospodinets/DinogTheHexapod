@@ -36,7 +36,8 @@ public:
 
     void setPos( const Vec3f& value, bool force = false );
     const Vec3f& getPos() const;
-    const Vec3f& getCenter();    
+    const Vec3f& getCenter() const;
+    const Vec3f& getHome() const;
 
 private:
     ServoEx m_coxa;
